@@ -1,0 +1,621 @@
+// src/pages/ProductPage.jsx
+// Carats by Grace — Product Detail Page (PDP)
+// Tech: React (JSX). Shares brand tokens with HomePage/CollectionPage.
+// Structure: Gallery (thumbs left / swipe mobile) → Info (title, price, metal/size,
+// size guide, pincode, add to cart, wishlist) → Accordion → Complete the look
+// → Recently viewed.
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+/* ===========================================================================
+   1. PAGE CSS (subset of brand tokens — safe to remove if global)
+=========================================================================== */
+const PDP_CSS = `
+:root{
+  --white:#FFFFFF; --ivory:#FAF6F1; --burgundy:#7B1E3A; --wine:#4A1124;
+  --gold:#C6A15B; --ink:#17120F; --muted:#7A6F70; --line:#E9E1D8;
+  --blush:#F1E3DC; --wine-deep:#3B0F1F; --rose-gold:#C9967F; --ruby:#A3152F;
+  --serif:"Cormorant Garamond","Playfair Display",Georgia,serif;
+  --sans:"Jost","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --pad-x:clamp(20px,5vw,80px);
+}
+.pd-wrap{max-width:1440px;margin:0 auto;padding-inline:var(--pad-x)}
+.pd-eyebrow{font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+.pd-display{font-family:var(--serif);font-weight:400;line-height:1.05;
+  letter-spacing:-.01em;margin:0}
+.pd-hairline{height:1px;background:var(--line);border:0;margin:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.pd-btn{display:inline-flex;align-items:center;justify-content:center;
+  min-height:52px;padding:0 26px;border-radius:1px;font-size:.78rem;
+  letter-spacing:.18em;text-transform:uppercase;font-weight:500;
+  transition:all .3s var(--ease);border:1px solid transparent;white-space:nowrap}
+.pd-btn--solid{background:var(--burgundy);color:var(--ivory);width:100%}
+.pd-btn--solid:hover{background:var(--wine)}
+.pd-btn--ghost{border-color:var(--ink);color:var(--ink)}
+.pd-btn--ghost:hover{background:var(--ink);color:var(--ivory)}
+.pd-btn--icon{min-height:52px;width:52px;padding:0;border:1px solid var(--line);
+  color:var(--ink);background:var(--white)}
+.pd-btn--icon.is-saved{color:var(--ruby);border-color:var(--ruby)}
+.pd-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Breadcrumb */
+.pd-crumb{padding-block:22px;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.pd-crumb a:hover{color:var(--burgundy)}
+.pd-crumb span{margin:0 8px;color:var(--line)}
+
+/* Layout */
+.pd-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,5vw,72px);
+  padding-bottom:clamp(56px,8vw,96px);align-items:start}
+
+/* Gallery */
+.pd-gallery{position:relative;display:grid;grid-template-columns:76px 1fr;
+  gap:14px;align-items:start}
+.pd-thumbs{display:flex;flex-direction:column;gap:10px;
+  position:sticky;top:88px}
+.pd-thumb{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--blush);
+  border:1px solid transparent;padding:0;transition:border-color .25s var(--ease)}
+.pd-thumb.is-active{border-color:var(--ink)}
+.pd-thumb img{width:100%;height:100%;object-fit:cover}
+
+.pd-stage{position:relative;aspect-ratio:4/5;overflow:hidden;
+  background:var(--blush);cursor:zoom-in;user-select:none}
+.pd-stage img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease);
+  transform-origin:center;will-change:transform}
+.pd-stage.is-zoomed img{transition:transform .15s linear}
+.pd-stage__zoom{position:absolute;top:12px;right:12px;background:rgba(250,246,241,.92);
+  width:40px;height:40px;display:grid;place-items:center;border-radius:999px;
+  color:var(--ink);pointer-events:none;font-size:.8rem}
+.pd-stage__nav{position:absolute;inset-inline:0;top:50%;transform:translateY(-50%);
+  display:none;justify-content:space-between;padding-inline:12px;pointer-events:none}
+.pd-stage__nav button{pointer-events:auto;width:42px;height:42px;border-radius:999px;
+  background:rgba(250,246,241,.92);display:grid;place-items:center;color:var(--ink)}
+.pd-dots{display:none;justify-content:center;gap:6px;padding-top:14px}
+.pd-dot{width:6px;height:6px;border-radius:999px;background:var(--line);
+  transition:all .25s var(--ease)}
+.pd-dot.is-active{background:var(--burgundy);width:20px}
+
+/* Info */
+.pd-info{position:sticky;top:88px}
+.pd-title{font-family:var(--serif);font-size:clamp(1.8rem,3.2vw,2.5rem);
+  font-weight:400;line-height:1.1;margin:8px 0 6px}
+.pd-spec-line{font-size:.82rem;color:var(--muted);margin-bottom:18px}
+.pd-price{font-size:1.15rem;font-weight:500;margin-bottom:6px}
+.pd-price__note{font-size:.72rem;color:var(--muted);letter-spacing:.02em;
+  margin-bottom:22px}
+.pd-price__note strong{color:var(--ink);font-weight:500}
+
+/* Option groups */
+.pd-group{margin-bottom:22px}
+.pd-group__label{display:flex;justify-content:space-between;align-items:center;
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;font-weight:500}
+.pd-group__label button{font-size:.66rem;color:var(--burgundy);
+  letter-spacing:.14em;text-decoration:underline;text-underline-offset:4px}
+.pd-opts{display:flex;flex-wrap:wrap;gap:8px}
+.pd-opt{min-height:42px;min-width:52px;padding:0 14px;border:1px solid var(--line);
+  background:var(--white);font-size:.78rem;letter-spacing:.06em;color:var(--ink);
+  transition:all .25s var(--ease);display:inline-flex;align-items:center;
+  justify-content:center;gap:8px}
+.pd-opt:hover{border-color:var(--burgundy)}
+.pd-opt.is-active{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+.pd-opt.is-disabled{opacity:.4;text-decoration:line-through;
+  cursor:not-allowed;pointer-events:none}
+.pd-metal-dot{width:12px;height:12px;border-radius:999px;border:1px solid rgba(0,0,0,.08)}
+
+/* Stock */
+.pd-stock{display:flex;align-items:center;gap:8px;font-size:.76rem;
+  letter-spacing:.06em;color:var(--burgundy);margin-bottom:18px}
+.pd-stock__dot{width:6px;height:6px;border-radius:999px;background:currentColor;
+  animation:pdpulse 2s ease-in-out infinite}
+@keyframes pdpulse{50%{opacity:.35}}
+
+/* Pincode */
+.pd-pin{display:flex;gap:8px;margin-bottom:20px}
+.pd-pin input{flex:1;border:1px solid var(--line);background:var(--white);
+  padding:0 14px;min-height:44px;font-family:var(--sans);font-size:.88rem;
+  color:var(--ink);border-radius:1px;transition:border-color .3s var(--ease)}
+.pd-pin input:focus{outline:none;border-color:var(--ink)}
+.pd-pin button{padding:0 18px;border:1px solid var(--ink);background:transparent;
+  color:var(--ink);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  min-height:44px;transition:all .25s var(--ease)}
+.pd-pin button:hover{background:var(--ink);color:var(--ivory)}
+.pd-pin__result{font-size:.76rem;color:var(--muted);margin:-10px 0 18px}
+.pd-pin__result.is-ok{color:#2F6B3A}
+
+/* CTA row */
+.pd-cta{display:grid;grid-template-columns:1fr 52px;gap:10px;margin-bottom:18px}
+.pd-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  padding-block:18px;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);margin-bottom:6px}
+.pd-trust__item{display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:6px;font-size:.66rem;letter-spacing:.04em;
+  color:var(--muted)}
+.pd-trust__item svg{color:var(--gold)}
+
+/* Accordion */
+.pd-acc{border-top:1px solid var(--line)}
+.pd-acc__item{border-bottom:1px solid var(--line)}
+.pd-acc__trigger{width:100%;display:flex;justify-content:space-between;
+  align-items:center;padding:18px 0;text-align:left;font-family:var(--serif);
+  font-size:1.02rem;color:var(--ink);transition:color .25s var(--ease)}
+.pd-acc__trigger:hover{color:var(--burgundy)}
+.pd-acc__icon{flex:none;width:20px;height:20px;display:grid;place-items:center;
+  color:var(--gold);font-size:1rem;transition:transform .3s var(--ease)}
+.pd-acc__item.is-open .pd-acc__icon{transform:rotate(45deg)}
+.pd-acc__body{overflow:hidden;max-height:0;transition:max-height .35s var(--ease)}
+.pd-acc__inner{padding:0 0 20px;color:var(--muted);font-size:.88rem;
+  line-height:1.65}
+.pd-acc__inner ul{margin:0;padding-left:18px}
+
+/* Related sections */
+.pd-related{background:var(--ivory);padding-block:clamp(56px,8vw,96px)}
+.pd-related__head{display:flex;justify-content:space-between;align-items:end;
+  gap:24px;flex-wrap:wrap;margin-bottom:32px}
+.pd-related__title{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.3rem);
+  margin-top:12px}
+.pd-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);
+  gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.pd-rail::-webkit-scrollbar{height:4px}
+.pd-rail::-webkit-scrollbar-thumb{background:var(--line)}
+.pd-rail > *{scroll-snap-align:start}
+
+.pd-card{position:relative;background:var(--white);display:block;color:inherit}
+.pd-card__media{position:relative;aspect-ratio:4/5;overflow:hidden;
+  background:var(--blush)}
+.pd-card__media img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;transition:opacity .55s var(--ease),transform .8s var(--ease)}
+.pd-card__img--hover{opacity:0}
+.pd-card:hover .pd-card__img--hover{opacity:1}
+.pd-card:hover .pd-card__img--main{opacity:0}
+.pd-card:hover .pd-card__media img{transform:scale(1.04)}
+.pd-card__body{padding:14px 4px}
+.pd-card__name{font-family:var(--serif);font-size:1.02rem;margin:0 0 4px;
+  font-weight:500}
+.pd-card__spec{font-size:.72rem;color:var(--muted);margin:0 0 8px}
+.pd-card__price{font-size:.9rem;font-weight:500}
+
+/* Mobile */
+@media (max-width:1024px){
+  .pd-layout{grid-template-columns:1fr}
+  .pd-info{position:static}
+  .pd-gallery{grid-template-columns:1fr}
+  .pd-thumbs{display:none}
+  .pd-stage__nav{display:flex}
+  .pd-dots{display:flex}
+}
+@media (max-width:640px){
+  .pd-trust{grid-template-columns:1fr 1fr}
+  .pd-cta{grid-template-columns:1fr 52px}
+}
+`;
+
+/* ===========================================================================
+   2. ICONS + HELPERS
+=========================================================================== */
+function Icon({ name, size = 18 }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+    stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round",
+    strokeLinejoin: "round", "aria-hidden": true,
+  };
+  const paths = {
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />,
+    chevron: <path d="m6 9 6 6 6-6" />,
+    arrowRight: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
+    plus: <><path d="M12 5v14M5 12h14" /></>,
+    zoom: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5M8 11h6M11 8v6" /></>,
+    shield: <><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" /><path d="m9 12 2 2 4-4" /></>,
+    truck: <><path d="M3 7h11v9H3z" /><path d="M14 10h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" /></>,
+    returns: <><path d="M4 12a8 8 0 1 0 3-6.2" /><path d="M4 4v4h4" /></>,
+  };
+  return <svg {...common}>{paths[name] || null}</svg>;
+}
+
+const INR = (n) => "₹" + n.toLocaleString("en-IN");
+
+/* ===========================================================================
+   3. PLACEHOLDER DATA
+   Replace with fetch('/api/products/:id') from your Node API.
+=========================================================================== */
+const PRODUCT = {
+  id: "r1",
+  name: "The Aurelia Ring",
+  cat: "Rings",
+  subtitle: "A quiet solitaire, set in warm gold.",
+  spec: "18K Yellow Gold · 0.42 ct · Hand-finished",
+  price: 64000,
+  emi: 5333,
+  metalOptions: [
+    { key: "yellow", label: "Yellow Gold", dot: "#C9967F", available: true },
+    { key: "rose", label: "Rose Gold", dot: "#E8B4A0", available: true },
+    { key: "white", label: "White Gold", dot: "#E4E1DC", available: true },
+    { key: "platinum", label: "Platinum", dot: "#C8CBD0", available: false },
+  ],
+  sizeOptions: ["10", "11", "12", "13", "14", "15", "16"],
+  outOfStockSizes: ["16"],
+  images: [
+    { src: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=1200&q=85", alt: "The Aurelia Ring — front view" },
+    { src: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=1200&q=85", alt: "The Aurelia Ring — on hand" },
+    { src: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=85", alt: "The Aurelia Ring — side detail" },
+    { src: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=1200&q=85", alt: "The Aurelia Ring — pairing with other rings" },
+    { src: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=1200&q=85", alt: "The Aurelia Ring — studio on ivory" },
+  ],
+  details: {
+    "Product details": [
+      "PLACEHOLDER: 18K yellow gold, 0.42 ct centre stone.",
+      "Weight and stone count to be confirmed by the atelier.",
+      "Hand-finished in our studio.",
+    ],
+    "Certification": [
+      "PLACEHOLDER: Certification details to be confirmed.",
+      "Do not publish any claim that is not verified.",
+    ],
+    "Care": [
+      "Store separately in the pouch provided.",
+      "Avoid contact with perfume, chlorine and harsh cleaners.",
+      "Wipe gently with a soft dry cloth after wear.",
+    ],
+    "Shipping & returns": [
+      "PLACEHOLDER: Complimentary insured shipping across India.",
+      "PLACEHOLDER: Returns window and conditions to be confirmed.",
+      "Free returns on unworn pieces in original packaging.",
+    ],
+  },
+};
+
+const COMPLETE_LOOK = [
+  { id: "e2", name: "Petal Studs", spec: "Rose Gold", price: 32000,
+    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+  { id: "n1", name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000,
+    img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+  { id: "b1", name: "Slip Bracelet", spec: "18K Gold", price: 58000,
+    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+  { id: "r4", name: "Étoile Band", spec: "18K Gold", price: 42000,
+    img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+];
+
+const RECENTLY_VIEWED = [
+  { id: "r3", name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000,
+    img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+  { id: "r2", name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000,
+    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+  { id: "e1", name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000,
+    img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+  { id: "n2", name: "Sculpt Chain", spec: "Rose Gold", price: 47000,
+    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+];
+
+/* ===========================================================================
+   4. GALLERY
+=========================================================================== */
+function Gallery({ images }) {
+  const [active, setActive] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const stageRef = useRef(null);
+  const touchStartX = useRef(null);
+
+  const onMove = (e) => {
+    if (!zoomed || !stageRef.current) return;
+    const r = stageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    setPos({ x, y });
+  };
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) {
+      setActive((i) => (dx < 0 ? (i + 1) % images.length : (i - 1 + images.length) % images.length));
+    }
+    touchStartX.current = null;
+  };
+
+  const go = (dir) =>
+    setActive((i) => (i + dir + images.length) % images.length);
+
+  return (
+    <div className="pd-gallery" aria-label="Product images">
+      <div className="pd-thumbs" role="tablist" aria-label="Image thumbnails">
+        {images.map((img, i) => (
+          <button key={i} className={`pd-thumb ${i === active ? "is-active" : ""}`}
+            role="tab" aria-selected={i === active} aria-label={`Image ${i + 1}`}
+            onClick={() => setActive(i)}>
+            <img src={img.src} alt="" loading="lazy" />
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <div
+          ref={stageRef}
+          className={`pd-stage ${zoomed ? "is-zoomed" : ""}`}
+          onMouseEnter={() => setZoomed(true)}
+          onMouseLeave={() => { setZoomed(false); setPos({ x: 50, y: 50 }); }}
+          onMouseMove={onMove}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          role="region" aria-label="Main product image">
+          <img src={images[active].src} alt={images[active].alt}
+            style={{
+              transform: zoomed ? "scale(2)" : "scale(1)",
+              transformOrigin: `${pos.x}% ${pos.y}%`,
+            }}
+            fetchpriority={active === 0 ? "high" : "auto"}
+            loading={active === 0 ? "eager" : "lazy"} />
+          <span className="pd-stage__zoom" aria-hidden="true"><Icon name="zoom" size={16} /></span>
+          <div className="pd-stage__nav" aria-hidden="false">
+            <button aria-label="Previous image" onClick={() => go(-1)}>
+              <Icon name="arrowRight" size={16} style={{ transform: "rotate(180deg)" }} />
+            </button>
+            <button aria-label="Next image" onClick={() => go(1)}>
+              <Icon name="arrowRight" size={16} />
+            </button>
+          </div>
+        </div>
+        <div className="pd-dots" role="tablist" aria-label="Image indicators">
+          {images.map((_, i) => (
+            <button key={i} className={`pd-dot ${i === active ? "is-active" : ""}`}
+              role="tab" aria-selected={i === active}
+              aria-label={`Go to image ${i + 1}`}
+              onClick={() => setActive(i)} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================================
+   5. ACCORDION
+=========================================================================== */
+function Accordion({ title, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const innerRef = useRef(null);
+  return (
+    <div className={`pd-acc__item ${open ? "is-open" : ""}`}>
+      <button className="pd-acc__trigger" aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}>
+        {title}
+        <span className="pd-acc__icon" aria-hidden="true">+</span>
+      </button>
+      <div className="pd-acc__body"
+        style={{ maxHeight: open ? (innerRef.current?.scrollHeight || 400) : 0 }}>
+        <div className="pd-acc__inner" ref={innerRef}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================================
+   6. PRODUCT CARD (for related rails)
+=========================================================================== */
+function MiniCard({ p }) {
+  return (
+    <a className="pd-card" href="#">
+      <div className="pd-card__media">
+        <img className="pd-card__img--main" src={p.img} alt={p.name} loading="lazy" />
+        <img className="pd-card__img--hover" src={p.hover} alt="" aria-hidden="true" loading="lazy" />
+      </div>
+      <div className="pd-card__body">
+        <h4 className="pd-card__name">{p.name}</h4>
+        <div className="pd-card__spec">{p.spec}</div>
+        <div className="pd-card__price">{INR(p.price)}</div>
+      </div>
+    </a>
+  );
+}
+
+/* ===========================================================================
+   7. PAGE
+=========================================================================== */
+export default function ProductPage({ onAddToCart, onWishlist }) {
+  const [metal, setMetal] = useState(
+    PRODUCT.metalOptions.find((m) => m.available)?.key || null
+  );
+  const [size, setSize] = useState(null);
+  const [saved, setSaved] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinResult, setPinResult] = useState(null);
+  const [added, setAdded] = useState(false);
+
+  const canAdd = useMemo(
+    () =>
+      metal &&
+      (!PRODUCT.sizeOptions.length || (size && !PRODUCT.outOfStockSizes.includes(size))),
+    [metal, size]
+  );
+
+  const submitPin = (e) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pin)) {
+      setPinResult({ ok: false, msg: "Please enter a valid 6-digit pincode." });
+      return;
+    }
+    // PLACEHOLDER: replace with GET /api/pincode/:code
+    setPinResult({ ok: true, msg: "Delivers in 3–5 working days · Free insured shipping" });
+  };
+
+  const handleAdd = () => {
+    if (!canAdd) return;
+    setAdded(true);
+    onAddToCart?.({ ...PRODUCT, metal, size });
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  useEffect(() => {
+    // PLACEHOLDER: track recently viewed in localStorage / server
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
+  return (
+    <main>
+      <style>{PDP_CSS}</style>
+
+      {/* Breadcrumb */}
+      <div className="pd-wrap pd-crumb">
+        <a href="/">Home</a><span>/</span>
+        <a href="/collections">Collections</a><span>/</span>
+        <a href="/collections/rings">Rings</a><span>/</span>
+        <span style={{ color: "var(--ink)" }}>{PRODUCT.name}</span>
+      </div>
+
+      <div className="pd-wrap pd-layout">
+        {/* ---------- GALLERY ---------- */}
+        <Gallery images={PRODUCT.images} />
+
+        {/* ---------- INFO ---------- */}
+        <div className="pd-info">
+          <span className="pd-eyebrow">{PRODUCT.cat} · Signature</span>
+          <h1 className="pd-title">{PRODUCT.name}</h1>
+          <p className="pd-spec-line">{PRODUCT.spec}</p>
+          <div className="pd-price">{INR(PRODUCT.price)}</div>
+          <div className="pd-price__note">
+            <strong>or {INR(PRODUCT.emi)}/mo</strong> · No-cost EMI placeholder
+          </div>
+
+          {/* Metal */}
+          <div className="pd-group">
+            <div className="pd-group__label">
+              <span>Metal</span>
+              <span style={{ color: "var(--muted)", textTransform: "none",
+                letterSpacing: 0, fontSize: ".68rem" }}>
+                {PRODUCT.metalOptions.find((m) => m.key === metal)?.label}
+              </span>
+            </div>
+            <div className="pd-opts">
+              {PRODUCT.metalOptions.map((m) => (
+                <button key={m.key}
+                  className={`pd-opt ${metal === m.key ? "is-active" : ""} ${!m.available ? "is-disabled" : ""}`}
+                  aria-pressed={metal === m.key}
+                  disabled={!m.available}
+                  onClick={() => setMetal(m.key)}>
+                  <span className="pd-metal-dot" style={{ background: m.dot }} aria-hidden="true" />
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Size */}
+          {PRODUCT.sizeOptions.length > 0 && (
+            <div className="pd-group">
+              <div className="pd-group__label">
+                <span>Size</span>
+                <button type="button" onClick={() => alert("PLACEHOLDER: open size guide modal")}>
+                  Size guide
+                </button>
+              </div>
+              <div className="pd-opts">
+                {PRODUCT.sizeOptions.map((s) => {
+                  const oos = PRODUCT.outOfStockSizes.includes(s);
+                  return (
+                    <button key={s}
+                      className={`pd-opt ${size === s ? "is-active" : ""} ${oos ? "is-disabled" : ""}`}
+                      aria-pressed={size === s}
+                      disabled={oos}
+                      onClick={() => setSize(s)}>
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="pd-stock">
+            <span className="pd-stock__dot" aria-hidden="true" />
+            In stock · dispatched in 2–3 days
+          </div>
+
+          {/* Pincode */}
+          <form className="pd-pin" onSubmit={submitPin}>
+            <label htmlFor="pd-pin" className="sr-only">Delivery pincode</label>
+            <input id="pd-pin" inputMode="numeric" maxLength={6} placeholder="Enter delivery pincode"
+              value={pin} onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinResult(null); }} />
+            <button type="submit">Check</button>
+          </form>
+          {pinResult && (
+            <p className={`pd-pin__result ${pinResult.ok ? "is-ok" : ""}`}>{pinResult.msg}</p>
+          )}
+
+          {/* CTA */}
+          <div className="pd-cta">
+            <button className="pd-btn pd-btn--solid" disabled={!canAdd} onClick={handleAdd}>
+              {added ? "Added ✓" : canAdd ? "Add to bag" : "Select size"}
+            </button>
+            <button className={`pd-btn pd-btn--icon ${saved ? "is-saved" : ""}`}
+              aria-pressed={saved} aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+              onClick={() => { setSaved((v) => !v); onWishlist?.(PRODUCT); }}>
+              <Icon name="heart" />
+            </button>
+          </div>
+
+          <div className="pd-trust">
+            <div className="pd-trust__item"><Icon name="shield" size={20} />Certified quality</div>
+            <div className="pd-trust__item"><Icon name="truck" size={20} />Insured shipping</div>
+            <div className="pd-trust__item"><Icon name="returns" size={20} />Easy returns</div>
+          </div>
+
+          {/* Accordion */}
+          <div className="pd-acc">
+            {Object.entries(PRODUCT.details).map(([title, lines], i) => (
+              <Accordion key={title} title={title} defaultOpen={i === 0}>
+                <ul>
+                  {lines.map((l, j) => <li key={j}>{l}</li>)}
+                </ul>
+              </Accordion>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ---------- COMPLETE THE LOOK ---------- */}
+      <section className="pd-related" aria-labelledby="pdp-look">
+        <div className="pd-wrap">
+          <div className="pd-related__head">
+            <div>
+              <span className="pd-eyebrow">Styled together</span>
+              <h2 id="pdp-look" className="pd-related__title">Complete the look</h2>
+            </div>
+            <a href="/collections" className="pd-btn pd-btn--ghost" style={{ minHeight: 44 }}>
+              Explore All
+            </a>
+          </div>
+          <div className="pd-rail">
+            {COMPLETE_LOOK.map((p) => <MiniCard key={p.id} p={p} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- RECENTLY VIEWED ---------- */}
+      <section className="pd-wrap" style={{ paddingBlock: "clamp(56px,8vw,96px)" }}
+        aria-labelledby="pdp-recent">
+        <div className="pd-related__head">
+          <div>
+            <span className="pd-eyebrow">Just for you</span>
+            <h2 id="pdp-recent" className="pd-related__title">Recently viewed</h2>
+          </div>
+        </div>
+        <div className="pd-rail">
+          {RECENTLY_VIEWED.map((p) => <MiniCard key={p.id} p={p} />)}
+        </div>
+      </section>
+    </main>
+  );
+}

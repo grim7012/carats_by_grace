@@ -1,0 +1,76 @@
+/* ============================================================
+   CARATS BY GRACE — Design Tokens
+   All CSS custom properties centralised here.
+   ============================================================ */
+
+:root {
+  /* ── Colour Palette ──────────────────────────────────────── */
+  --white:      #FFFFFF;
+  --ivory:      #FAF6F1;
+  --burgundy:   #7B1E3A;
+  --wine:       #4A1124;
+  --gold:       #C6A15B;
+  --ink:        #1C1517;
+  --muted:      #7A6F70;
+  --line:       #E9E1D8;
+  --blush:      #F1E3DC;
+  --wine-deep:  #3B0F1F;
+  --rose-gold:  #C9967F;
+  --ruby:       #A3152F;
+  --ink-dark:   #17120F;
+
+  /* ── Typography ──────────────────────────────────────────── */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:  'Jost', system-ui, sans-serif;
+
+  /* ── Type Scale ──────────────────────────────────────────── */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  clamp(1.25rem, 2vw, 1.5rem);
+  --text-3xl:  clamp(1.5rem,  3vw, 2rem);
+  --text-4xl:  clamp(2rem,    4vw, 3rem);
+  --text-5xl:  clamp(2.5rem,  5vw, 4rem);
+  --text-6xl:  clamp(3rem,    7vw, 5.5rem);
+
+  /* ── Spacing (multiples of 8px) ──────────────────────────── */
+  --space-1:  0.5rem;    /*  8px */
+  --space-2:  1rem;      /* 16px */
+  --space-3:  1.5rem;    /* 24px */
+  --space-4:  2rem;      /* 32px */
+  --space-5:  2.5rem;    /* 40px */
+  --space-6:  3rem;      /* 48px */
+  --space-7:  3.5rem;    /* 56px */
+  --space-8:  4rem;      /* 64px */
+  --space-9:  4.5rem;    /* 72px */
+  --space-10: 5rem;      /* 80px */
+  --space-11: 5.5rem;    /* 88px */
+  --space-12: 6rem;      /* 96px */
+  --space-13: 6.5rem;    /* 104px */
+  --space-14: 7rem;      /* 112px */
+  --space-15: 7.5rem;    /* 120px */
+  --space-16: 8rem;      /* 128px */
+  --space-17: 8.5rem;    /* 136px */
+  --space-18: 9rem;      /* 144px */
+  --space-19: 9.5rem;    /* 152px */
+  --space-20: 10rem;     /* 160px */
+  --space-21: 10.5rem;   /* 168px */
+  --space-22: 11rem;     /* 176px */
+  --space-23: 11.5rem;   /* 184px */
+  --space-24: 12rem;     /* 192px */
+
+  /* ── Section Padding ─────────────────────────────────────── */
+  --section-pad-desktop: clamp(6rem, 10vw, 10rem);
+  --section-pad-mobile:  4rem;
+
+  /* ── Transitions ─────────────────────────────────────────── */
+  --transition-fast:   150ms ease-out;
+  --transition-base:   250ms ease-out;
+  --transition-slow:   400ms ease-out;
+
+  /* ── Border Radius ───────────────────────────────────────── */
+  --radius:    2px;
+  --radius-sm: 1px;
+}

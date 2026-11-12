@@ -1,0 +1,1673 @@
+// src/pages/HomePage.jsx
+// Carats by Grace — Landing page (single-file build)
+// Tech: React (JSX).
+// NOTE: Hero is now video-only and loops continuously. All images/URLs marked
+// PLACEHOLDER — replace with brand assets.
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
+
+/* ===========================================================================
+   DESIGN TOKENS + GLOBAL STYLES
+=========================================================================== */
+const BRAND_CSS = `
+:root{
+  --white:#FFFFFF; --ivory:#FAF6F1; --burgundy:#7B1E3A; --wine:#4A1124;
+  --gold:#C6A15B; --ink:#17120F; --muted:#7A6F70; --line:#E9E1D8;
+  --blush:#F1E3DC; --wine-deep:#3B0F1F; --rose-gold:#C9967F; --ruby:#A3152F;
+  --serif:"Cormorant Garamond","Playfair Display",Georgia,serif;
+  --sans:"Jost","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --pad-x:clamp(20px,5vw,80px);
+  --section-y:clamp(64px,9vw,140px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--white);
+  -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+.cg-wrap{max-width:1440px;margin:0 auto;padding-inline:var(--pad-x)}
+.cg-section{padding-block:var(--section-y)}
+.cg-eyebrow{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+.cg-display{font-family:var(--serif);font-weight:400;line-height:1.05;
+  letter-spacing:-.01em;margin:0}
+.cg-hairline{height:1px;background:var(--line);border:0;margin:0;width:100%}
+.cg-sparkle{color:var(--gold);font-size:.9em;line-height:1}
+
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 26px;border-radius:1px;font-size:.78rem;
+  letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+  transition:all .3s var(--ease);border:1px solid transparent;white-space:nowrap}
+.cg-btn--solid{background:var(--burgundy);color:var(--ivory)}
+.cg-btn--solid:hover{background:var(--wine)}
+.cg-btn--ghost{border-color:var(--ink);color:var(--ink)}
+.cg-btn--ghost:hover{background:var(--ink);color:var(--ivory)}
+.cg-btn--ghost-light{border-color:rgba(250,246,241,.7);color:var(--ivory)}
+.cg-btn--ghost-light:hover{background:var(--ivory);color:var(--ink)}
+
+.reveal{opacity:0;transform:translateY(28px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.is-in{opacity:1;transform:none}
+
+/* Announcement */
+.cg-ann{background:var(--burgundy);color:var(--ivory);font-size:.7rem;
+  letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:70}
+.cg-ann__inner{display:flex;align-items:center;justify-content:center;
+  min-height:38px;gap:16px;padding:6px var(--pad-x);text-align:center}
+.cg-ann__msg{transition:opacity .5s var(--ease)}
+.cg-ann__x{position:absolute;right:calc(var(--pad-x) - 8px);top:50%;
+  transform:translateY(-50%);color:var(--ivory);opacity:.7;font-size:1rem;
+  width:44px;height:44px;display:grid;place-items:center}
+.cg-ann__x:hover{opacity:1}
+
+/* Header */
+.cg-header{position:fixed;inset:0 0 auto 0;z-index:60;
+  transition:background .35s var(--ease),box-shadow .35s var(--ease),
+  border-color .35s var(--ease);border-bottom:1px solid transparent}
+.cg-header.is-scrolled{background:var(--white);border-bottom:1px solid var(--line);
+  box-shadow:0 6px 24px -18px rgba(23,18,15,.4)}
+.cg-header__bar{display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;min-height:72px;gap:16px}
+.cg-header__nav{display:flex;gap:22px;align-items:center}
+.cg-header__nav a{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:500;position:relative;padding:6px 0;color:var(--ink);
+  transition:color .25s var(--ease)}
+.cg-header__nav a::after{content:"";position:absolute;left:0;bottom:0;
+  height:1px;width:0;background:var(--rose-gold);transition:width .35s var(--ease)}
+.cg-header__nav a:hover::after{width:100%}
+.cg-logo{display:flex;align-items:center;justify-content:center}
+.cg-logo img{height:44px;width:auto}
+.cg-logo span{color:inherit;transition:color .25s var(--ease)}
+.cg-header__util{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.cg-header__util button{width:44px;height:44px;display:grid;place-items:center;
+  color:var(--ink);position:relative;transition:color .3s var(--ease)}
+.cg-cart-count{position:absolute;top:6px;right:6px;min-width:16px;height:16px;
+  background:var(--burgundy);color:var(--ivory);font-size:.6rem;border-radius:999px;
+  display:grid;place-items:center;padding:0 4px}
+.cg-burger{display:none}
+
+/* Header over dark hero — ivory text + soft top scrim for legibility */
+.cg-header.is-onhero:not(.is-scrolled){
+  background:linear-gradient(180deg,rgba(23,18,15,.55),rgba(23,18,15,0));
+}
+.cg-header.is-onhero:not(.is-scrolled) .cg-header__nav a,
+.cg-header.is-onhero:not(.is-scrolled) .cg-header__util button,
+.cg-header.is-onhero:not(.is-scrolled) .cg-logo,
+.cg-header.is-onhero:not(.is-scrolled) .cg-logo span,
+.cg-header.is-onhero:not(.is-scrolled) .cg-burger{
+  color:var(--ivory);
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}
+.cg-header.is-onhero:not(.is-scrolled) .cg-header__nav a::after{
+  background:var(--ivory);
+}
+.cg-header.is-onhero:not(.is-scrolled) .cg-cart-count{
+  background:var(--ivory);color:var(--burgundy);
+}
+
+/* Mega menu */
+.cg-mega{position:absolute;left:0;right:0;top:100%;background:var(--white);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .3s var(--ease),transform .3s var(--ease),visibility .3s;
+  z-index:55}
+.cg-mega.is-open{opacity:1;visibility:visible;transform:none}
+.cg-mega__inner{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;
+  gap:40px;padding:48px var(--pad-x) 56px;max-width:1440px;margin:0 auto}
+.cg-mega__col h4{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 16px;font-weight:500}
+.cg-mega__col a{display:block;padding:7px 0;font-size:.9rem;color:var(--ink);
+  transition:color .25s var(--ease)}
+.cg-mega__col a:hover{color:var(--burgundy)}
+.cg-mega__img{aspect-ratio:3/4;overflow:hidden}
+.cg-mega__img img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.cg-mega__img:hover img{transform:scale(1.04)}
+
+/* Hero — video only, continuous loop */
+.cg-hero{position:relative;min-height:100svh;display:grid;overflow:hidden;
+  background:var(--ink)}
+.cg-hero__media{position:absolute;inset:0;overflow:hidden;background:var(--ink)}
+.cg-hero__media video{width:100%;height:100%;object-fit:cover;
+  object-position:62% 40%;display:block}
+.cg-hero__media::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(23,18,15,.55) 0%,
+    rgba(23,18,15,.20) 22%,
+    rgba(23,18,15,0) 42%,
+    rgba(23,18,15,0) 58%,
+    rgba(23,18,15,.60) 100%)}
+.cg-hero__copy{position:relative;align-self:end;z-index:2;color:var(--ivory);
+  padding:0 var(--pad-x) clamp(48px,8vh,96px);max-width:820px}
+.cg-hero__copy .cg-eyebrow{color:rgba(250,246,241,.82)}
+.cg-hero__title{font-family:var(--serif);font-weight:300;
+  font-size:clamp(2.6rem,7vw,5.6rem);line-height:1.02;margin:14px 0 18px;
+  letter-spacing:-.015em;max-width:14ch}
+.cg-hero__lede{font-size:clamp(.95rem,1.6vw,1.1rem);max-width:44ch;
+  color:rgba(250,246,241,.92);margin:0 0 28px;font-weight:300}
+.cg-hero__ctas{display:flex;gap:14px;flex-wrap:wrap}
+.cg-scrollcue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+  z-index:3;color:rgba(250,246,241,.8);font-size:.62rem;letter-spacing:.3em;
+  text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cg-scrollcue span{display:block;width:1px;height:34px;background:currentColor;
+  animation:cue 2.4s ease-in-out infinite;transform-origin:top}
+@keyframes cue{0%,100%{transform:scaleY(.4);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+/* Trust strip */
+.cg-trust{background:var(--ivory);border-bottom:1px solid var(--line)}
+.cg-trust__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+  padding-block:26px}
+.cg-trust__item{display:flex;align-items:center;gap:12px;justify-content:center;
+  font-size:.74rem;letter-spacing:.06em;color:var(--ink);text-align:left}
+.cg-trust__item svg{color:var(--gold);flex:none}
+
+/* Category grid */
+.cg-cat__head{display:flex;justify-content:space-between;align-items:end;
+  gap:24px;margin-bottom:40px;flex-wrap:wrap}
+.cg-cat__grid{display:grid;gap:16px;
+  grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(140px,auto)}
+.cg-tile{position:relative;overflow:hidden;background:var(--blush);display:block}
+.cg-tile img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
+.cg-tile:hover img{transform:scale(1.06)}
+.cg-tile__label{position:absolute;left:16px;bottom:14px;color:var(--ivory);
+  font-family:var(--serif);font-size:1.2rem;letter-spacing:.02em;
+  text-shadow:0 1px 12px rgba(23,18,15,.4);z-index:2}
+.cg-tile::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 55%,rgba(23,18,15,.42));z-index:1}
+.cg-tile__shop{position:absolute;right:14px;bottom:14px;z-index:3;
+  font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory);
+  opacity:0;transform:translateY(6px);transition:all .35s var(--ease)}
+.cg-tile:hover .cg-tile__shop{opacity:1;transform:none}
+.cg-tile--tall{grid-row:span 2}
+.cg-tile--wide{grid-column:span 2}
+
+/* Campaign split */
+.cg-split{display:grid;grid-template-columns:1fr 1fr;min-height:560px}
+.cg-split__img{position:relative;overflow:hidden;min-height:100%}
+.cg-split__img img{width:100%;height:100%;object-fit:cover;object-position:50% 35%;
+  transition:transform .9s var(--ease)}
+.cg-split__img:hover img{transform:scale(1.03)}
+.cg-split__copy{background:var(--ivory);display:flex;flex-direction:column;
+  justify-content:center;padding:clamp(40px,6vw,96px)}
+.cg-split__title{font-family:var(--serif);font-weight:400;
+  font-size:clamp(2rem,4.2vw,3.4rem);line-height:1.06;margin:16px 0 18px;
+  max-width:16ch}
+.cg-split__lede{color:var(--muted);max-width:40ch;margin:0 0 28px;font-size:.98rem}
+
+/* Best sellers */
+.cg-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px}
+.cg-tab{padding:10px 18px;font-size:.72rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);border:1px solid transparent;
+  border-radius:1px;transition:all .3s var(--ease)}
+.cg-tab.is-active{color:var(--ink);border-color:var(--line)}
+.cg-tab:hover{color:var(--ink)}
+.cg-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);
+  gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.cg-rail::-webkit-scrollbar{height:4px}
+.cg-rail::-webkit-scrollbar-thumb{background:var(--line)}
+.cg-rail > *{scroll-snap-align:start}
+
+.cg-card{position:relative;background:var(--ivory)}
+.cg-card__media{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--blush)}
+.cg-card__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  transition:opacity .6s var(--ease),transform .8s var(--ease)}
+.cg-card__img--hover{opacity:0}
+.cg-card:hover .cg-card__img--hover{opacity:1}
+.cg-card:hover .cg-card__img--main{opacity:0}
+.cg-card:hover .cg-card__media img{transform:scale(1.04)}
+.cg-card__wish{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;
+  display:grid;place-items:center;background:rgba(250,246,241,.92);
+  border-radius:999px;opacity:0;transform:translateY(-6px);
+  transition:all .3s var(--ease);color:var(--ink)}
+.cg-card:hover .cg-card__wish,.cg-card__wish.is-saved{opacity:1;transform:none}
+.cg-card__wish.is-saved{color:var(--ruby)}
+.cg-card__add{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;
+  min-height:42px;background:rgba(250,246,241,.96);color:var(--ink);
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  opacity:0;transform:translateY(8px);transition:all .35s var(--ease);
+  border:1px solid var(--line)}
+.cg-card:hover .cg-card__add{opacity:1;transform:none}
+.cg-card__add:hover{background:var(--burgundy);color:var(--ivory);border-color:var(--burgundy)}
+.cg-card__body{padding:16px 14px 18px}
+.cg-card__name{font-family:var(--serif);font-size:1.08rem;margin:0 0 4px;
+  font-weight:500}
+.cg-card__spec{font-size:.74rem;color:var(--muted);margin:0 0 8px;
+  display:inline-block;padding-bottom:2px;border-bottom:1px solid transparent;
+  transition:border-color .3s var(--ease)}
+.cg-card:hover .cg-card__spec{border-color:var(--gold)}
+.cg-card__price{font-size:.9rem;font-weight:500}
+
+/* Limited edition */
+.cg-limited__grid{display:grid;grid-auto-flow:column;
+  grid-auto-columns:minmax(260px,1fr);gap:20px;overflow-x:auto;
+  scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+.cg-limited__card{position:relative;aspect-ratio:3/4;overflow:hidden;
+  scroll-snap-align:start;background:var(--wine-deep)}
+.cg-limited__card img{width:100%;height:100%;object-fit:cover;
+  transition:transform .9s var(--ease)}
+.cg-limited__card:hover img{transform:scale(1.05)}
+.cg-limited__card::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 45%,rgba(23,18,15,.62))}
+.cg-limited__tag{position:absolute;top:14px;left:14px;z-index:3;
+  background:var(--ivory);color:var(--ink);font-size:.6rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:6px 10px}
+.cg-limited__name{position:absolute;left:16px;bottom:16px;z-index:3;
+  color:var(--ivory);font-family:var(--serif);font-size:1.35rem;line-height:1.15}
+
+/* Burgundy story */
+.cg-story{background:var(--burgundy);color:var(--ivory);position:relative;
+  overflow:hidden}
+.cg-story__inner{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,6vw,80px);
+  align-items:center;padding-block:clamp(80px,12vw,160px)}
+.cg-story__title{font-family:var(--serif);font-weight:400;
+  font-size:clamp(2.2rem,4.8vw,4rem);line-height:1.04;margin:18px 0 22px;
+  max-width:16ch}
+.cg-story__body{color:rgba(250,246,241,.82);max-width:44ch;margin:0 0 30px;
+  font-size:1rem;font-weight:300}
+.cg-story__imgs{display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  align-items:start}
+.cg-story__imgs figure{margin:0;overflow:hidden}
+.cg-story__imgs img{width:100%;aspect-ratio:3/4;object-fit:cover}
+.cg-story__imgs figure:nth-child(2){margin-top:48px}
+
+/* Craft */
+.cg-craft__grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,6vw,80px);
+  align-items:center}
+.cg-craft__media{position:relative;aspect-ratio:16/11;overflow:hidden;
+  background:var(--blush)}
+.cg-craft__media img{width:100%;height:100%;object-fit:cover}
+.cg-craft__play{position:absolute;inset:0;display:grid;place-items:center;
+  background:rgba(23,18,15,.18);transition:background .3s var(--ease)}
+.cg-craft__play:hover{background:rgba(23,18,15,.3)}
+.cg-craft__play span{width:76px;height:76px;border-radius:999px;
+  border:1px solid rgba(250,246,241,.85);color:var(--ivory);
+  display:grid;place-items:center;font-size:1rem;backdrop-filter:blur(2px)}
+.cg-craft__steps{display:grid;gap:0;margin-top:32px}
+.cg-craft__step{display:grid;grid-template-columns:44px 1fr;gap:16px;
+  padding:18px 0;border-top:1px solid var(--line)}
+.cg-craft__step:last-child{border-bottom:1px solid var(--line)}
+.cg-craft__num{font-family:var(--serif);font-size:1.1rem;color:var(--gold)}
+.cg-craft__step h5{margin:0 0 4px;font-size:.92rem;font-weight:500;
+  letter-spacing:.02em}
+.cg-craft__step p{margin:0;font-size:.84rem;color:var(--muted)}
+
+/* Bridal */
+.cg-bridal{background:var(--ivory)}
+.cg-bridal__grid{display:grid;grid-template-columns:1.25fr .75fr 1fr;
+  grid-template-rows:auto auto;gap:16px}
+.cg-bridal__grid figure{margin:0;overflow:hidden;background:var(--blush)}
+.cg-bridal__grid img{width:100%;height:100%;object-fit:cover;
+  transition:transform .9s var(--ease)}
+.cg-bridal__grid figure:hover img{transform:scale(1.04)}
+.cg-bridal__a{grid-row:span 2;aspect-ratio:3/4}
+.cg-bridal__b{aspect-ratio:1/1}
+.cg-bridal__c{aspect-ratio:4/5}
+.cg-bridal__copy{display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(24px,4vw,48px);background:var(--white);grid-column:3;
+  grid-row:1/3}
+.cg-bridal__title{font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.8rem,3.4vw,2.8rem);line-height:1.08;margin:14px 0 16px}
+.cg-bridal__lede{color:var(--muted);font-size:.92rem;margin:0 0 22px}
+
+/* Gifting */
+.cg-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.cg-chip{min-height:44px;padding:0 20px;border:1px solid var(--line);
+  border-radius:999px;font-size:.74rem;letter-spacing:.08em;color:var(--ink);
+  transition:all .3s var(--ease);background:var(--white)}
+.cg-chip:hover{border-color:var(--burgundy);color:var(--burgundy)}
+
+/* Why */
+.cg-why__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;
+  margin-top:44px}
+.cg-why__col h5{font-family:var(--serif);font-size:1.15rem;font-weight:500;
+  margin:0 0 8px}
+.cg-why__col p{color:var(--muted);font-size:.88rem;margin:0}
+.cg-why__col .cg-sparkle{font-size:1.1rem}
+
+/* Testimonials */
+.cg-testi{background:var(--ivory)}
+.cg-testi__stage{max-width:820px;margin:0 auto;text-align:center;position:relative;
+  min-height:260px;display:grid;place-items:center}
+.cg-testi__slide{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;opacity:0;transform:translateY(10px);
+  transition:opacity .7s var(--ease),transform .7s var(--ease);pointer-events:none}
+.cg-testi__slide.is-active{opacity:1;transform:none;pointer-events:auto}
+.cg-testi__mark{font-family:var(--serif);font-size:4rem;line-height:.6;
+  color:var(--rose-gold)}
+.cg-testi__quote{font-family:var(--serif);font-size:clamp(1.25rem,2.4vw,1.75rem);
+  line-height:1.4;font-weight:400;margin:18px 0 22px;max-width:36ch}
+.cg-testi__who{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted)}
+.cg-testi__dots{display:flex;gap:8px;justify-content:center;margin-top:32px}
+.cg-testi__dot{width:8px;height:8px;border-radius:999px;background:var(--line);
+  transition:all .3s var(--ease)}
+.cg-testi__dot.is-active{background:var(--burgundy);width:24px}
+
+/* Instagram */
+.cg-insta__grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.cg-insta__cell{position:relative;aspect-ratio:1/1;overflow:hidden;
+  background:var(--blush)}
+.cg-insta__cell img{width:100%;height:100%;object-fit:cover;
+  transition:transform .8s var(--ease)}
+.cg-insta__cell:hover img{transform:scale(1.06)}
+.cg-insta__cell::after{content:"＋ View";position:absolute;inset:0;
+  display:grid;place-items:center;color:var(--ivory);font-size:.68rem;
+  letter-spacing:.24em;text-transform:uppercase;background:rgba(23,18,15,.36);
+  opacity:0;transition:opacity .3s var(--ease)}
+.cg-insta__cell:hover::after{opacity:1}
+
+/* Visit */
+.cg-visit__grid{display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid var(--line)}
+.cg-visit__img{min-height:480px;overflow:hidden;background:var(--blush)}
+.cg-visit__img img{width:100%;height:100%;object-fit:cover}
+.cg-visit__form{padding:clamp(28px,5vw,64px);background:var(--ivory)}
+.cg-field{margin-bottom:22px}
+.cg-field label{display:block;font-size:.68rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.cg-input{width:100%;border:0;border-bottom:1px solid var(--line);
+  background:transparent;padding:10px 0;font-family:var(--sans);font-size:1rem;
+  color:var(--ink);transition:border-color .3s var(--ease);border-radius:0}
+.cg-input:focus{outline:none;border-color:var(--burgundy)}
+.cg-wa{display:inline-flex;align-items:center;gap:8px;color:var(--burgundy);
+  font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin-top:18px}
+
+/* FAQ */
+.cg-faq{background:var(--white)}
+.cg-faq__list{max-width:880px;margin:0 auto}
+.cg-faq__item{border-top:1px solid var(--line)}
+.cg-faq__item:last-child{border-bottom:1px solid var(--line)}
+.cg-faq__q{width:100%;display:flex;justify-content:space-between;gap:20px;
+  align-items:center;padding:24px 0;text-align:left;font-family:var(--serif);
+  font-size:clamp(1.05rem,2vw,1.3rem);color:var(--ink);transition:color .3s var(--ease)}
+.cg-faq__q:hover{color:var(--burgundy)}
+.cg-faq__icon{flex:none;width:22px;height:22px;display:grid;place-items:center;
+  color:var(--gold);font-size:1rem;transition:transform .35s var(--ease)}
+.cg-faq__item.is-open .cg-faq__icon{transform:rotate(45deg)}
+.cg-faq__a{overflow:hidden;max-height:0;transition:max-height .4s var(--ease)}
+.cg-faq__a-inner{padding:0 0 26px;color:var(--muted);max-width:60ch;
+  font-size:.92rem}
+
+/* Newsletter */
+.cg-news{background:var(--ivory);text-align:center}
+.cg-news__form{display:flex;gap:12px;max-width:520px;margin:24px auto 0;
+  flex-wrap:wrap;justify-content:center}
+.cg-news__form .cg-input{flex:1;min-width:220px;text-align:center}
+
+/* Footer */
+.cg-footer{background:var(--wine-deep);color:var(--ivory);position:relative}
+.cg-footer__top{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:40px;
+  padding-block:clamp(56px,8vw,96px)}
+.cg-footer h4{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;
+  color:rgba(250,246,241,.6);margin:0 0 18px;font-weight:500}
+.cg-footer ul{list-style:none;margin:0;padding:0}
+.cg-footer li{padding:6px 0}
+.cg-footer li a{font-size:.86rem;color:rgba(250,246,241,.82);
+  transition:color .25s var(--ease)}
+.cg-footer li a:hover{color:var(--ivory)}
+.cg-footer__brand img{height:52px;margin-bottom:18px}
+.cg-footer__brand p{color:rgba(250,246,241,.7);font-size:.86rem;max-width:30ch}
+.cg-footer__social{display:flex;gap:10px;margin-top:22px}
+.cg-footer__social a{width:40px;height:40px;border:1px solid rgba(250,246,241,.25);
+  display:grid;place-items:center;border-radius:999px;color:var(--ivory);
+  transition:all .3s var(--ease)}
+.cg-footer__social a:hover{background:var(--ivory);color:var(--wine-deep)}
+.cg-footer__bottom{border-top:1px solid rgba(250,246,241,.16);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  align-items:center;padding-block:22px;font-size:.72rem;
+  color:rgba(250,246,241,.65)}
+.cg-footer__pays{display:flex;gap:8px;flex-wrap:wrap}
+.cg-footer__pays span{border:1px solid rgba(250,246,241,.25);
+  padding:4px 8px;font-size:.6rem;letter-spacing:.12em}
+.cg-backtop{display:inline-flex;align-items:center;gap:6px;
+  color:rgba(250,246,241,.8);font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase}
+.cg-backtop:hover{color:var(--ivory)}
+
+/* Mobile menu */
+.cg-mobile{position:fixed;inset:0;background:var(--white);z-index:90;
+  transform:translateX(100%);transition:transform .4s var(--ease);
+  display:flex;flex-direction:column;overflow-y:auto}
+.cg-mobile.is-open{transform:none}
+.cg-mobile__head{display:flex;align-items:center;justify-content:space-between;
+  padding:16px var(--pad-x);border-bottom:1px solid var(--line)}
+.cg-mobile__body{padding:12px var(--pad-x) 40px}
+.cg-mobile__group{border-bottom:1px solid var(--line)}
+.cg-mobile__trigger{width:100%;display:flex;justify-content:space-between;
+  align-items:center;padding:18px 0;font-family:var(--serif);font-size:1.2rem;
+  color:var(--ink)}
+.cg-mobile__sub{overflow:hidden;max-height:0;transition:max-height .35s var(--ease)}
+.cg-mobile__sub a{display:block;padding:10px 0 10px 14px;font-size:.88rem;
+  color:var(--muted)}
+.cg-mobile__sub a:hover{color:var(--burgundy)}
+
+/* Responsive */
+@media (max-width:1024px){
+  .cg-header__nav{display:none}
+  .cg-header__bar{grid-template-columns:auto 1fr auto}
+  .cg-burger{display:grid;width:44px;height:44px;place-items:center}
+  .cg-mega{display:none}
+  .cg-cat__grid{grid-template-columns:repeat(2,1fr)}
+  .cg-tile--wide{grid-column:span 2}
+  .cg-split{grid-template-columns:1fr}
+  .cg-split__img{min-height:420px;order:-1}
+  .cg-story__inner{grid-template-columns:1fr}
+  .cg-craft__grid{grid-template-columns:1fr}
+  .cg-bridal__grid{grid-template-columns:1fr 1fr}
+  .cg-bridal__copy{grid-column:1/3;grid-row:auto}
+  .cg-bridal__a{grid-row:auto}
+  .cg-insta__grid{grid-template-columns:repeat(3,1fr)}
+  .cg-visit__grid{grid-template-columns:1fr}
+  .cg-visit__img{min-height:320px}
+  .cg-footer__top{grid-template-columns:1fr 1fr;gap:32px}
+  .cg-trust__grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:768px){
+  .cg-hero{min-height:92svh}
+  .cg-hero__media video{object-position:60% 30%}
+  .cg-hero__copy{max-width:none}
+  .cg-hero__ctas{flex-direction:column;align-items:stretch}
+  .cg-hero__ctas .cg-btn{width:100%}
+  .cg-cat__grid{grid-template-columns:1fr;grid-auto-rows:auto;
+    grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;
+    scroll-snap-type:x mandatory;padding-bottom:8px}
+  .cg-tile{scroll-snap-align:start;aspect-ratio:3/4}
+  .cg-tile--tall,.cg-tile--wide{grid-row:auto;grid-column:auto;aspect-ratio:3/4}
+  .cg-story__imgs{gap:12px}
+  .cg-story__imgs figure:nth-child(2){margin-top:32px}
+  .cg-why__grid{grid-template-columns:1fr;gap:22px}
+  .cg-bridal__grid{grid-template-columns:1fr}
+  .cg-bridal__copy{grid-column:1}
+  .cg-bridal__a,.cg-bridal__b,.cg-bridal__c{aspect-ratio:4/5}
+  .cg-insta__grid{grid-template-columns:repeat(2,1fr)}
+  .cg-footer__top{grid-template-columns:1fr}
+  .cg-trust__grid{grid-template-columns:1fr 1fr;gap:16px}
+  .cg-trust__item{justify-content:flex-start}
+  .cg-limited__grid{grid-auto-columns:80%}
+}
+@media (max-width:480px){
+  .cg-rail{grid-auto-columns:78%}
+  .cg-limited__grid{grid-auto-columns:86%}
+}
+`;
+
+/* ===========================================================================
+   PLACEHOLDER DATA
+=========================================================================== */
+const IMG = {
+  // Hero is video-only now. Replace BOTH URLs with your own looping assets.
+  heroVideoMp4:  "src\\components\\video\\1794410894431085.mp4",
+  heroVideoWebm: "https://cdn.example.com/carats/hero.webm",
+  logo: "", // ← your CG logo file (e.g. /logo.svg)
+};
+
+const CATEGORIES = [
+  { name: "Rings", img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80", cls: "cg-tile--tall" },
+  { name: "Earrings", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80", cls: "" },
+  { name: "Necklaces", img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=800&q=80", cls: "cg-tile--wide" },
+  { name: "Bracelets", img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=800&q=80", cls: "" },
+  { name: "Bangles", img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=800&q=80", cls: "" },
+  { name: "Pendants", img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80", cls: "" },
+];
+
+const PRODUCTS = {
+  Rings: [
+    { name: "The Aurelia Ring", spec: "18K Gold · 0.42 ct", price: 64000, img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    { name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000, img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+    { name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000, img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+    { name: "Étoile Band", spec: "18K Gold", price: 42000, img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+  ],
+  Earrings: [
+    { name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000, img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    { name: "Petal Studs", spec: "Rose Gold", price: 32000, img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    { name: "Nightfall Hoops", spec: "18K · Diamonds", price: 118000, img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+    { name: "Dewdrop Mini", spec: "18K Gold", price: 28000, img: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+  ],
+  Necklaces: [
+    { name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000, img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    { name: "Sculpt Chain", spec: "Rose Gold", price: 47000, img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    { name: "Étoile Necklace", spec: "18K · Diamonds", price: 156000, img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+    { name: "Grace Lariat", spec: "18K Gold", price: 88000, img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+  ],
+};
+
+const LIMITED = [
+  { name: "The Nocturne Edit", img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+  { name: "Ruby Hours", img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+  { name: "Gilded Veil", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+  { name: "The Ivory Suite", img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80" },
+  { name: "Midnight Bloom", img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80" },
+];
+
+const TESTIMONIALS = [
+  { quote: "The kind of piece you never take off. It feels made for me.", who: "Ananya · Mumbai" },
+  { quote: "Quietly special. My everyday ring that still feels celebratory.", who: "Meera · Bengaluru" },
+  { quote: "Beautifully considered, from the box to the last detail.", who: "Rhea · New Delhi" },
+];
+
+const FAQS = [
+  { q: "How do I find my ring size?", a: "PLACEHOLDER: Our size guide walks you through measuring at home, or book a video consultation and we'll guide you." },
+  { q: "Are your pieces certified?", a: "PLACEHOLDER: Replace with confirmed certification information. We do not invent certification claims." },
+  { q: "What are your shipping timelines?", a: "PLACEHOLDER: Confirm your dispatch and delivery windows. Insured shipping placeholder." },
+  { q: "What is your returns policy?", a: "PLACEHOLDER: Confirm your returns window and conditions." },
+  { q: "How should I care for my jewellery?", a: "PLACEHOLDER: Gentle care guidance to be confirmed by your team." },
+  { q: "Can I customise a piece?", a: "PLACEHOLDER: Describe your bespoke/customisation process here." },
+  { q: "What payment methods do you accept?", a: "PLACEHOLDER: List accepted payment methods and any EMI options." },
+];
+
+/* ===========================================================================
+   HOOKS
+=========================================================================== */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window) ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      els.forEach((el) => el.classList.add("is-in"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+function useScrolled(threshold = 24) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
+}
+
+/* ===========================================================================
+   SMALL COMPONENTS
+=========================================================================== */
+const Sparkle = ({ style }) => (
+  <span className="cg-sparkle" aria-hidden="true" style={style}>✦</span>
+);
+
+function Icon({ name, size = 20 }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+    stroke: "currentColor", strokeWidth: 1.4,
+    strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true,
+  };
+  const paths = {
+    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></>,
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />,
+    user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
+    bag: <><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8a3 3 0 0 1 6 0" /></>,
+    menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
+    close: <><path d="M6 6l12 12M18 6L6 18" /></>,
+    arrowRight: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
+    arrowUp: <><path d="M12 19V5M6 11l6-6 6 6" /></>,
+    plus: <><path d="M12 5v14M5 12h14" /></>,
+    chevron: <path d="m6 9 6 6 6-6" />,
+    play: <path d="M8 5v14l11-7L8 5Z" />,
+    shield: <><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" /><path d="m9 12 2 2 4-4" /></>,
+    refresh: <><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 21v-5h5" /></>,
+    truck: <><path d="M3 7h11v9H3z" /><path d="M14 10h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" /></>,
+    returns: <><path d="M4 12a8 8 0 1 0 3-6.2" /><path d="M4 4v4h4" /></>,
+    instagram: <><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><circle cx="17" cy="7" r=".6" fill="currentColor" /></>,
+    whatsapp: <><path d="M4 20l1.5-4A8 8 0 1 1 9 19.4L4 20Z" /><path d="M9 10c.5 2 2 3.5 4 4" /></>,
+    pinterest: <><circle cx="12" cy="12" r="8" /><path d="M10 20c1-3 2-6 3-9" /><path d="M9 12a3 3 0 1 1 5 2" /></>,
+  };
+  return <svg {...common}>{paths[name] || null}</svg>;
+}
+
+const INR = (n) => "₹" + n.toLocaleString("en-IN");
+
+/* ===========================================================================
+   SECTION COMPONENTS
+=========================================================================== */
+
+/* Announcement */
+function Announcement({ onDismiss }) {
+  const messages = [
+    "Complimentary insured shipping across India",
+    "The Festive Edit — now previewing",
+    "Book a private consultation with our atelier",
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % messages.length), 4200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="cg-ann" role="region" aria-label="Announcement">
+      <div className="cg-ann__inner">
+        <Sparkle />
+        <span className="cg-ann__msg" aria-live="polite">{messages[idx]}</span>
+        <Sparkle />
+      </div>
+      <button className="cg-ann__x" aria-label="Dismiss announcement" onClick={onDismiss}>
+        <Icon name="close" size={14} />
+      </button>
+    </div>
+  );
+}
+
+/* Header + Mega + Mobile */
+function Header({ cartCount, onOpenCart }) {
+  const scrolled = useScrolled();
+  const [megaOpen, setMegaOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileGroup, setMobileGroup] = useState(null);
+  const onHero = true;
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  const nav = [
+    { label: "Rings", mega: true },
+    { label: "Earrings", mega: true },
+    { label: "Necklaces", mega: true },
+    { label: "Bracelets", mega: true },
+    { label: "Bridal" },
+    { label: "Gifting" },
+    { label: "High Jewellery" },
+  ];
+
+  const megaData = {
+    "By Category": ["Rings", "Earrings", "Necklaces", "Bracelets", "Bangles", "Pendants"],
+    "By Occasion": ["Everyday", "Gifting", "Bridal", "Festive", "Anniversary"],
+    "By Price": ["Under ₹50K", "₹50K – ₹1L", "Above ₹1L"],
+  };
+
+  const cls = ["cg-header",
+    scrolled ? "is-scrolled" : "",
+    onHero ? "is-onhero" : ""].filter(Boolean).join(" ");
+
+  return (
+    <header className={cls}
+      onMouseLeave={() => setMegaOpen(false)}>
+      <div className="cg-wrap cg-header__bar">
+        <div className="cg-header__nav" aria-hidden={mobileOpen}>
+          <button className="cg-burger" aria-label="Open menu"
+            onClick={() => setMobileOpen(true)}
+            style={{ display: "none" }}>
+            <Icon name="menu" />
+          </button>
+          {nav.map((n) => (
+            <a key={n.label} href="#"
+              onMouseEnter={() => setMegaOpen(!!n.mega)}
+              onFocus={() => setMegaOpen(!!n.mega)}>
+              {n.label}
+            </a>
+          ))}
+        </div>
+
+        <button className="cg-burger" aria-label="Open menu"
+          onClick={() => setMobileOpen(true)}>
+          <Icon name="menu" />
+        </button>
+
+        <a className="cg-logo" href="/" aria-label="Carats by Grace — home">
+          {IMG.logo ? (
+            <img src={IMG.logo} alt="Carats by Grace" />
+          ) : (
+            <span style={{
+              fontFamily: "var(--serif)", fontSize: "1.35rem",
+              letterSpacing: ".1em", color: "inherit"
+            }}>CG · CARATS BY GRACE</span>
+          )}
+        </a>
+
+        <div className="cg-header__util">
+          <button aria-label="Search"><Icon name="search" /></button>
+          <button aria-label="Wishlist"><Icon name="heart" /></button>
+          <button aria-label="Account"><Icon name="user" /></button>
+          <button aria-label={`Cart, ${cartCount} items`} onClick={onOpenCart}>
+            <Icon name="bag" />
+            {cartCount > 0 && <span className="cg-cart-count">{cartCount}</span>}
+          </button>
+        </div>
+      </div>
+
+      {/* Mega menu */}
+      <div className={`cg-mega ${megaOpen ? "is-open" : ""}`}
+        onMouseEnter={() => setMegaOpen(true)}
+        onMouseLeave={() => setMegaOpen(false)}>
+        <div className="cg-mega__inner">
+          {Object.entries(megaData).map(([title, items]) => (
+            <div className="cg-mega__col" key={title}>
+              <h4>{title}</h4>
+              {items.map((i) => <a key={i} href="#">{i}</a>)}
+            </div>
+          ))}
+          <div className="cg-mega__col">
+            <h4>Discover</h4>
+            <a href="#">Latest Arrivals</a>
+            <a href="#">Bestsellers</a>
+            <a href="#">The Bridal Edit</a>
+            <a href="#">Book a Consultation</a>
+          </div>
+          <a className="cg-mega__img" href="#">
+            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
+              alt="Editorial: model wearing Carats by Grace rings" loading="lazy" />
+          </a>
+        </div>
+      </div>
+
+      {/* Mobile */}
+      <div className={`cg-mobile ${mobileOpen ? "is-open" : ""}`}
+        role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="cg-mobile__head">
+          <span className="cg-eyebrow">Menu</span>
+          <button aria-label="Close menu" onClick={() => setMobileOpen(false)}>
+            <Icon name="close" />
+          </button>
+        </div>
+        <div className="cg-mobile__body">
+          {Object.entries(megaData).flatMap(([title, items]) => [
+            { key: title, label: title, items }
+          ]).map((g) => (
+            <div className="cg-mobile__group" key={g.key}>
+              <button className="cg-mobile__trigger"
+                aria-expanded={mobileGroup === g.key}
+                onClick={() => setMobileGroup(mobileGroup === g.key ? null : g.key)}>
+                {g.label}
+                <Icon name="chevron" size={18} />
+              </button>
+              <div className="cg-mobile__sub"
+                style={{ maxHeight: mobileGroup === g.key ? 400 : 0 }}>
+                {g.items.map((i) => <a key={i} href="#">{i}</a>)}
+              </div>
+            </div>
+          ))}
+          {["Bridal", "Gifting", "High Jewellery", "Book a Consultation"].map((l) => (
+            <div className="cg-mobile__group" key={l}>
+              <a className="cg-mobile__trigger" href="#">{l}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* Hero — video only, continuous loop */
+function Hero() {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    // Ensure the muted PROPERTY is set before the browser decides to autoplay.
+    v.muted = true;
+    v.defaultMuted = true;
+
+    const tryPlay = () => {
+      const p = v.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // Autoplay blocked (iOS low-power mode etc.) — resume on first user gesture.
+          const resume = () => {
+            v.play().catch(() => {});
+            window.removeEventListener("pointerdown", resume);
+            window.removeEventListener("touchstart", resume);
+          };
+          window.addEventListener("pointerdown", resume, { once: true });
+          window.addEventListener("touchstart", resume, { once: true });
+        });
+      }
+    };
+
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("loadeddata", tryPlay, { once: true });
+
+    return () => v.removeEventListener("loadeddata", tryPlay);
+  }, []);
+
+  return (
+    <section className="cg-hero" aria-label="Campaign">
+      <div className="cg-hero__media">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          aria-label="Campaign film — model wearing Carats by Grace jewellery"
+        >
+          {IMG.heroVideoWebm && (
+            <source src={IMG.heroVideoWebm} type="video/webm" />
+          )}
+          <source src={IMG.heroVideoMp4} type="video/mp4" />
+        </video>
+      </div>
+      <div className="cg-hero__copy">
+        <span className="cg-eyebrow">The Nocturne Edit · 2024</span>
+        <h1 className="cg-hero__title">Made to be worn, not kept away.</h1>
+        <p className="cg-hero__lede">
+          Fine jewellery for the everyday and the once-in-a-lifetime.
+          Quietly luminous, deliberately yours.
+        </p>
+        <div className="cg-hero__ctas">
+          <a className="cg-btn cg-btn--solid" href="#">Shop the Collection</a>
+          <a className="cg-btn cg-btn--ghost-light" href="#">Book a Consultation</a>
+        </div>
+      </div>
+      <div className="cg-scrollcue" aria-hidden="true">
+        <span />
+        Scroll
+      </div>
+    </section>
+  );
+}
+
+/* Trust */
+function Trust() {
+  const items = [
+    { icon: "shield", label: "Certified Quality" },
+    { icon: "refresh", label: "Lifetime Exchange" },
+    { icon: "truck", label: "Free Insured Shipping" },
+    { icon: "returns", label: "Easy Returns" },
+  ];
+  return (
+    <div className="cg-trust">
+      <div className="cg-wrap">
+        <div className="cg-trust__grid">
+          {items.map((it) => (
+            <div className="cg-trust__item" key={it.label}>
+              <Icon name={it.icon} size={22} />
+              <span>{it.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Categories */
+function Categories() {
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="cat-h">
+      <div className="cg-cat__head reveal">
+        <div>
+          <span className="cg-eyebrow">Shop by category</span>
+          <h2 id="cat-h" className="cg-display"
+            style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+            Find your everyday signature.
+          </h2>
+        </div>
+        <a className="cg-btn cg-btn--ghost" href="#">View all</a>
+      </div>
+      <div className="cg-cat__grid">
+        {CATEGORIES.map((c, i) => (
+          <a key={c.name} href="#"
+            className={`cg-tile ${c.cls} reveal`}
+            style={{ transitionDelay: `${i * 60}ms` }}>
+            <img src={c.img} alt={`${c.name} — Carats by Grace`} loading="lazy" />
+            <span className="cg-tile__label">{c.name}</span>
+            <span className="cg-tile__shop">Shop Now →</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* Signature campaign split */
+function CampaignSplit() {
+  return (
+    <section className="cg-section" style={{ paddingTop: 0 }}>
+      <div className="cg-split reveal">
+        <div className="cg-split__img">
+          <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80"
+            alt="Editorial: close-up of a ruby cocktail ring on a hand"
+            loading="lazy" />
+        </div>
+        <div className="cg-split__copy">
+          <span className="cg-eyebrow">Featured · The Ruby Hours</span>
+          <h2 className="cg-split__title">A little fire. A great deal of restraint.</h2>
+          <p className="cg-split__lede">
+            Our festive edit pairs a single ruby with warm gold — designed
+            for evenings that ask for nothing more.
+          </p>
+          <a className="cg-btn cg-btn--solid" href="#"
+            style={{ alignSelf: "flex-start" }}>
+            Explore the Edit
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Best Sellers */
+function BestSellers({ onAddToCart, onWishlist }) {
+  const tabs = ["Rings", "Earrings", "Necklaces", "All"];
+  const [tab, setTab] = useState("Rings");
+  const [saved, setSaved] = useState({});
+  const railRef = useRef(null);
+
+  const list = tab === "All"
+    ? [...PRODUCTS.Rings, ...PRODUCTS.Earrings, ...PRODUCTS.Necklaces]
+    : PRODUCTS[tab];
+
+  const scroll = (dir) => {
+    const el = railRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * (el.clientWidth * 0.7), behavior: "smooth" });
+  };
+
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="bs-h">
+      <div className="reveal" style={{ display: "flex",
+        justifyContent: "space-between", alignItems: "end",
+        gap: 24, flexWrap: "wrap", marginBottom: 8 }}>
+        <div>
+          <span className="cg-eyebrow">Bestsellers</span>
+          <h2 id="bs-h" className="cg-display"
+            style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+            The pieces she reaches for.
+          </h2>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="cg-tab" aria-label="Scroll left"
+            onClick={() => scroll(-1)}><Icon name="arrowRight" size={16}
+              style={{ transform: "rotate(180deg)" }} /></button>
+          <button className="cg-tab" aria-label="Scroll right"
+            onClick={() => scroll(1)}><Icon name="arrowRight" size={16} /></button>
+        </div>
+      </div>
+
+      <div className="cg-tabs reveal" role="tablist" aria-label="Product category">
+        {tabs.map((t) => (
+          <button key={t} role="tab" aria-selected={tab === t}
+            className={`cg-tab ${tab === t ? "is-active" : ""}`}
+            onClick={() => setTab(t)}>{t}</button>
+        ))}
+      </div>
+
+      <div className="cg-rail" ref={railRef} role="tabpanel" aria-label={tab}>
+        {list.map((p, i) => {
+          const isSaved = !!saved[p.name];
+          return (
+            <article className="cg-card reveal" key={p.name + i}
+              style={{ transitionDelay: `${i * 40}ms` }}>
+              <div className="cg-card__media">
+                <img className="cg-card__img--main" src={p.img}
+                  alt={`${p.name} — Carats by Grace`} loading="lazy" />
+                <img className="cg-card__img--hover" src={p.hover}
+                  alt="" aria-hidden="true" loading="lazy" />
+                <button
+                  className={`cg-card__wish ${isSaved ? "is-saved" : ""}`}
+                  aria-label={isSaved ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
+                  aria-pressed={isSaved}
+                  onClick={() => {
+                    setSaved((s) => ({ ...s, [p.name]: !s[p.name] }));
+                    onWishlist && onWishlist(p);
+                  }}>
+                  <Icon name="heart" size={18} />
+                </button>
+                <button className="cg-card__add"
+                  onClick={() => onAddToCart && onAddToCart(p)}>
+                  Add <span aria-hidden="true">+</span>
+                </button>
+              </div>
+              <div className="cg-card__body">
+                <h3 className="cg-card__name">{p.name}</h3>
+                <span className="cg-card__spec">{p.spec}</span>
+                <div className="cg-card__price">{INR(p.price)}</div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 36 }}>
+        <a className="cg-btn cg-btn--ghost" href="#">Explore More</a>
+      </div>
+    </section>
+  );
+}
+
+/* Limited edition */
+function Limited() {
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="lim-h">
+      <div className="reveal" style={{ marginBottom: 32 }}>
+        <span className="cg-eyebrow">Limited edition collections</span>
+        <h2 id="lim-h" className="cg-display"
+          style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+          Numbered. Never repeated.
+        </h2>
+      </div>
+      <div className="cg-limited__grid">
+        {LIMITED.map((c, i) => (
+          <a className="cg-limited__card reveal" key={c.name} href="#"
+            style={{ transitionDelay: `${i * 50}ms` }}>
+            <img src={c.img} alt={`${c.name} — limited edition`} loading="lazy" />
+            <span className="cg-limited__tag">Limited Edition</span>
+            <span className="cg-limited__name">{c.name}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* Story */
+function Story() {
+  return (
+    <section className="cg-story" aria-labelledby="story-h">
+      <div className="cg-wrap cg-story__inner">
+        <div className="reveal">
+          <span className="cg-eyebrow" style={{ color: "rgba(250,246,241,.7)" }}>
+            <Sparkle /> The Carats by Grace Story
+          </span>
+          <h2 id="story-h" className="cg-story__title">
+            Every carat, a choice.
+          </h2>
+          <p className="cg-story__body">
+            We make jewellery for the woman who chooses her own. Pieces
+            considered in proportion, crafted with restraint, and made to be
+            lived in. No noise — only the quiet confidence of something
+            genuinely yours.
+          </p>
+          <a className="cg-btn cg-btn--ghost-light" href="#">Our Story</a>
+        </div>
+        <div className="cg-story__imgs reveal">
+          <figure>
+            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
+              alt="Editorial: hand resting near the jawline, wearing rings" loading="lazy" />
+          </figure>
+          <figure>
+            <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80"
+              alt="Editorial: ear and gold earring close-up" loading="lazy" />
+          </figure>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Craft */
+function Craft() {
+  const steps = [
+    { n: "01", t: "Stone selection", d: "Placeholder — describe your sourcing." },
+    { n: "02", t: "Setting & finish", d: "Placeholder — describe the setting craft." },
+    { n: "03", t: "Final review", d: "Placeholder — describe quality control." },
+  ];
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="craft-h">
+      <div className="cg-craft__grid">
+        <div className="cg-craft__media reveal">
+          <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1200&q=80"
+            alt="Craft: close-up of goldsmith working on a ring" loading="lazy" />
+          <button className="cg-craft__play" aria-label="Play craftsmanship film">
+            <span><Icon name="play" size={20} /></span>
+          </button>
+        </div>
+        <div className="reveal">
+          <span className="cg-eyebrow">Craftsmanship</span>
+          <h2 id="craft-h" className="cg-display"
+            style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", margin: "12px 0 14px" }}>
+            Considered at every step.
+          </h2>
+          <p style={{ color: "var(--muted)", maxWidth: "44ch", margin: 0 }}>
+            From the cut of a stone to the weight of a setting — how we make
+            each piece. PLACEHOLDER copy; confirm any materials, sourcing and
+            process claims.
+          </p>
+          <div className="cg-craft__steps">
+            {steps.map((s) => (
+              <div className="cg-craft__step" key={s.n}>
+                <div className="cg-craft__num">{s.n}</div>
+                <div>
+                  <h5>{s.t}</h5>
+                  <p>{s.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Bridal */
+function Bridal() {
+  return (
+    <section className="cg-bridal cg-section" aria-labelledby="bridal-h">
+      <div className="cg-wrap">
+        <div className="cg-bridal__grid reveal">
+          <figure className="cg-bridal__a">
+            <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=900&q=80"
+              alt="Bridal: portrait of model in wedding jewellery" loading="lazy" />
+          </figure>
+          <figure className="cg-bridal__b">
+            <img src="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80"
+              alt="Bridal: close-up of necklace" loading="lazy" />
+          </figure>
+          <figure className="cg-bridal__c">
+            <img src="https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80"
+              alt="Bridal: stacked rings on hand" loading="lazy" />
+          </figure>
+          <div className="cg-bridal__copy">
+            <span className="cg-eyebrow">The Bridal Edit</span>
+            <h2 id="bridal-h" className="cg-bridal__title">
+              For the vows. And every day after.
+            </h2>
+            <p className="cg-bridal__lede">
+              Bridal rings and sets, considered in proportion and made to be
+              worn far beyond the day itself.
+            </p>
+            <a className="cg-btn cg-btn--solid" href="#"
+              style={{ alignSelf: "flex-start" }}>
+              Discover Bridal
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Gifting */
+function Gifting() {
+  const occasion = ["Birthday", "Anniversary", "Wedding", "Just Because"];
+  const budget = ["Under ₹50K", "₹50K – ₹1L", "Above ₹1L"];
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="gift-h">
+      <div className="reveal">
+        <span className="cg-eyebrow">The Gifting Guide</span>
+        <h2 id="gift-h" className="cg-display"
+          style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+          A gift they'll recognise as theirs.
+        </h2>
+        <div style={{ marginTop: 24 }}>
+          <span className="cg-eyebrow">By occasion</span>
+          <div className="cg-chips">
+            {occasion.map((o) => (
+              <a className="cg-chip" href="#" key={o}>{o}</a>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginTop: 20 }}>
+          <span className="cg-eyebrow">By budget</span>
+          <div className="cg-chips">
+            {budget.map((b) => (
+              <a className="cg-chip" href="#" key={b}>{b}</a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Why */
+function Why() {
+  const items = [
+    { t: "Considered design", d: "Proportions, weight and finish chosen with restraint. PLACEHOLDER." },
+    { t: "Everyday fine", d: "Pieces meant to be worn — not shelved. PLACEHOLDER." },
+    { t: "Made with care", d: "Sourcing, setting and finishing — details on request. PLACEHOLDER." },
+  ];
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="why-h">
+      <div className="reveal" style={{ textAlign: "center" }}>
+        <span className="cg-eyebrow">Why Carats by Grace</span>
+        <h2 id="why-h" className="cg-display"
+          style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+          Quiet promises, kept.
+        </h2>
+      </div>
+      <div className="cg-why__grid">
+        {items.map((it, i) => (
+          <div className="cg-why__col reveal" key={it.t}
+            style={{ transitionDelay: `${i * 60}ms` }}>
+            <Sparkle style={{ fontSize: "1.1rem" }} />
+            <h5 style={{ marginTop: 12 }}>{it.t}</h5>
+            <p>{it.d}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* Testimonials */
+function Testimonials() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % TESTIMONIALS.length), 6000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <section className="cg-testi cg-section" aria-label="Client words">
+      <div className="cg-wrap reveal">
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <span className="cg-eyebrow">Client words</span>
+        </div>
+        <div className="cg-testi__stage">
+          {TESTIMONIALS.map((t, i) => (
+            <div className={`cg-testi__slide ${i === idx ? "is-active" : ""}`}
+              key={t.who} aria-hidden={i !== idx}>
+              <div className="cg-testi__mark" aria-hidden="true">“</div>
+              <p className="cg-testi__quote">{t.quote}</p>
+              <div className="cg-testi__who">{t.who}</div>
+            </div>
+          ))}
+        </div>
+        <div className="cg-testi__dots" role="tablist" aria-label="Testimonials">
+          {TESTIMONIALS.map((_, i) => (
+            <button key={i} role="tab" aria-selected={i === idx}
+              aria-label={`Testimonial ${i + 1}`}
+              className={`cg-testi__dot ${i === idx ? "is-active" : ""}`}
+              onClick={() => setIdx(i)} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Instagram */
+function Instagram() {
+  const cells = [
+    "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=600&q=80",
+  ];
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="ig-h">
+      <div className="reveal" style={{ display: "flex", justifyContent: "space-between",
+        alignItems: "end", gap: 24, flexWrap: "wrap", marginBottom: 28 }}>
+        <div>
+          <span className="cg-eyebrow">@carats_by_grace</span>
+          <h2 id="ig-h" className="cg-display"
+            style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+            Seen, worn, shared.
+          </h2>
+        </div>
+        <a className="cg-btn cg-btn--ghost" href="#">Follow @carats_by_grace</a>
+      </div>
+      <div className="cg-insta__grid">
+        {cells.map((src, i) => (
+          <a className="cg-insta__cell reveal" key={i} href="#"
+            style={{ transitionDelay: `${i * 40}ms` }}>
+            <img src={src} alt={`Instagram post ${i + 1}`} loading="lazy" />
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* Visit */
+function Visit() {
+  const [form, setForm] = useState({ name: "", phone: "", date: "" });
+  const [sent, setSent] = useState(false);
+  const submit = (e) => {
+    e.preventDefault();
+    setSent(true); // PLACEHOLDER: wire to backend
+  };
+  return (
+    <section className="cg-section cg-wrap" aria-labelledby="visit-h">
+      <div className="cg-visit__grid reveal">
+        <div className="cg-visit__img">
+          <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1200&q=80"
+            alt="The Carats by Grace atelier — interior" loading="lazy" />
+        </div>
+        <div className="cg-visit__form">
+          <span className="cg-eyebrow">Visit</span>
+          <h2 id="visit-h" className="cg-display"
+            style={{ fontSize: "clamp(1.7rem,3vw,2.4rem)", margin: "12px 0 8px" }}>
+            Book a private appointment.
+          </h2>
+          <p style={{ color: "var(--muted)", fontSize: ".9rem", margin: "0 0 26px" }}>
+            In-store or by video. PLACEHOLDER address and appointment windows.
+          </p>
+          <form onSubmit={submit}>
+            <div className="cg-field">
+              <label htmlFor="v-name">Name</label>
+              <input id="v-name" className="cg-input" type="text" required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="cg-field">
+              <label htmlFor="v-phone">Phone</label>
+              <input id="v-phone" className="cg-input" type="tel" required
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            </div>
+            <div className="cg-field">
+              <label htmlFor="v-date">Preferred date</label>
+              <input id="v-date" className="cg-input" type="date"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })} />
+            </div>
+            <button type="submit" className="cg-btn cg-btn--solid">
+              {sent ? "Thank you — we'll be in touch" : "Request Appointment"}
+            </button>
+          </form>
+          <a className="cg-wa" href="#" aria-label="Chat on WhatsApp">
+            <Icon name="whatsapp" size={18} /> Chat on WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* FAQ */
+function FAQ() {
+  const [open, setOpen] = useState(0);
+  return (
+    <section className="cg-faq cg-section" aria-labelledby="faq-h">
+      <div className="cg-wrap reveal">
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <span className="cg-eyebrow">Questions</span>
+          <h2 id="faq-h" className="cg-display"
+            style={{ fontSize: "clamp(1.9rem,3.6vw,2.9rem)", marginTop: 12 }}>
+            A few things, answered.
+          </h2>
+        </div>
+        <div className="cg-faq__list">
+          {FAQS.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <div className={`cg-faq__item ${isOpen ? "is-open" : ""}`} key={f.q}>
+                <button className="cg-faq__q" aria-expanded={isOpen}
+                  aria-controls={`faq-${i}`}
+                  onClick={() => setOpen(isOpen ? -1 : i)}>
+                  {f.q}
+                  <span className="cg-faq__icon" aria-hidden="true">+</span>
+                </button>
+                <div id={`faq-${i}`} className="cg-faq__a"
+                  style={{ maxHeight: isOpen ? 300 : 0 }}>
+                  <div className="cg-faq__a-inner">{f.a}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Newsletter */
+function Newsletter() {
+  const [email, setEmail] = useState("");
+  const [ok, setOk] = useState(false);
+  return (
+    <section className="cg-news cg-section" aria-labelledby="news-h">
+      <div className="cg-wrap reveal">
+        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+          <Sparkle /><Sparkle /><Sparkle />
+        </div>
+        <h2 id="news-h" className="cg-display"
+          style={{ fontSize: "clamp(1.7rem,3vw,2.4rem)", margin: "14px 0 6px" }}>
+          Be first to the new edit.
+        </h2>
+        <p style={{ color: "var(--muted)", fontSize: ".9rem", margin: 0 }}>
+          A quiet note, now and then.
+        </p>
+        <form className="cg-news__form"
+          onSubmit={(e) => { e.preventDefault(); setOk(true); }}>
+          <input className="cg-input" type="email" required
+            aria-label="Email address" placeholder="you@example.com"
+            value={email} onChange={(e) => setEmail(e.target.value)} />
+          <button className="cg-btn cg-btn--solid" type="submit">
+            {ok ? "Subscribed ✓" : "Subscribe"}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
+
+/* Footer */
+function Footer() {
+  const cols = {
+    Jewellery: ["Rings", "Earrings", "Necklaces", "Bracelets", "Bangles", "Pendants", "High Jewellery"],
+    About: ["Our Story", "Craftsmanship", "Journal", "Stockists"],
+    Services: ["Book a Consultation", "Bespoke", "Care & Repair", "Gift Cards"],
+    Policies: ["Shipping", "Returns & Exchange", "Privacy", "Terms"],
+    Contact: ["WhatsApp", "hello@caratsbygrace.com", "Instagram"],
+  };
+  return (
+    <footer className="cg-footer" aria-label="Footer">
+      <div className="cg-wrap">
+        <div className="cg-footer__top">
+          <div className="cg-footer__brand">
+            {IMG.logo ? (
+              <img src={IMG.logo} alt="Carats by Grace" />
+            ) : (
+              <span style={{ fontFamily: "var(--serif)", fontSize: "1.5rem",
+                letterSpacing: ".08em" }}>Carats by Grace</span>
+            )}
+            <p>Modern fine jewellery, made quietly. Placeholder brand line.</p>
+            <div className="cg-footer__social">
+              <a href="#" aria-label="Instagram"><Icon name="instagram" size={18} /></a>
+              <a href="#" aria-label="Pinterest"><Icon name="pinterest" size={18} /></a>
+              <a href="#" aria-label="WhatsApp"><Icon name="whatsapp" size={18} /></a>
+            </div>
+          </div>
+          {Object.entries(cols).map(([title, items]) => (
+            <div key={title}>
+              <h4>{title}</h4>
+              <ul>
+                {items.map((i) => <li key={i}><a href="#">{i}</a></li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="cg-footer__bottom">
+          <span>© {new Date().getFullYear()} Carats by Grace. All rights reserved.</span>
+          <div className="cg-footer__pays" aria-label="Payment methods">
+            <span>UPI</span><span>VISA</span><span>MASTERCARD</span>
+            <span>AMEX</span><span>NET BANKING</span>
+          </div>
+          <a className="cg-backtop" href="#top"
+            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            <Icon name="arrowUp" size={14} /> Back to top
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* Cart drawer */
+function CartDrawer({ open, onClose, items, onQty, onRemove }) {
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    if (open) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+  return (
+    <>
+      <div onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, background: "rgba(23,18,15,.32)",
+          opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none",
+          transition: "opacity .3s var(--ease)", zIndex: 95,
+        }} aria-hidden="true" />
+      <aside role="dialog" aria-modal="true" aria-label="Shopping cart"
+        style={{
+          position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)",
+          background: "var(--white)", zIndex: 96,
+          transform: open ? "translateX(0)" : "translateX(100%)",
+          transition: "transform .4s var(--ease)",
+          display: "flex", flexDirection: "column",
+          boxShadow: "0 0 40px rgba(23,18,15,.18)",
+        }}>
+        <div style={{ display: "flex", alignItems: "center",
+          justifyContent: "space-between", padding: "18px 24px",
+          borderBottom: "1px solid var(--line)" }}>
+          <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.3rem", margin: 0 }}>
+            Your cart
+          </h3>
+          <button aria-label="Close cart" onClick={onClose}>
+            <Icon name="close" />
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+          {items.length === 0 && (
+            <p style={{ color: "var(--muted)", fontSize: ".9rem" }}>
+              Your cart is empty. Begin with the new edit.
+            </p>
+          )}
+          {items.map((i) => (
+            <div key={i.name} style={{ display: "grid",
+              gridTemplateColumns: "72px 1fr auto", gap: 14,
+              paddingBottom: 18, marginBottom: 18,
+              borderBottom: "1px solid var(--line)" }}>
+              <img src={i.img} alt={i.name}
+                style={{ width: 72, height: 90, objectFit: "cover" }} />
+              <div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: "1rem" }}>{i.name}</div>
+                <div style={{ fontSize: ".76rem", color: "var(--muted)", margin: "4px 0 8px" }}>{i.spec}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button aria-label="Decrease" onClick={() => onQty(i.name, -1)}
+                    style={{ width: 28, height: 28, border: "1px solid var(--line)" }}>−</button>
+                  <span style={{ minWidth: 20, textAlign: "center", fontSize: ".9rem" }}>{i.qty}</span>
+                  <button aria-label="Increase" onClick={() => onQty(i.name, 1)}
+                    style={{ width: 28, height: 28, border: "1px solid var(--line)" }}>+</button>
+                </div>
+              </div>
+              <div style={{ textAlign: "right", fontSize: ".86rem" }}>
+                {INR(i.price * i.qty)}
+                <div>
+                  <button onClick={() => onRemove(i.name)}
+                    style={{ fontSize: ".68rem", color: "var(--muted)",
+                      textTransform: "uppercase", letterSpacing: ".12em", marginTop: 8 }}>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: "20px 24px", borderTop: "1px solid var(--line)" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8,
+            fontSize: ".8rem", color: "var(--muted)", marginBottom: 12 }}>
+            <input type="checkbox" /> Add gift wrapping
+          </label>
+          <div style={{ display: "flex", justifyContent: "space-between",
+            fontSize: ".95rem", marginBottom: 16 }}>
+            <span>Subtotal</span>
+            <span style={{ fontWeight: 500 }}>{INR(subtotal)}</span>
+          </div>
+          <button className="cg-btn cg-btn--solid" style={{ width: "100%" }}
+            disabled={!items.length}>
+            Checkout
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+/* ===========================================================================
+   PAGE
+=========================================================================== */
+export default function HomePage() {
+  const [annVisible, setAnnVisible] = useState(true);
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+
+  useReveal();
+
+  const addToCart = useCallback((p) => {
+    setCart((c) => {
+      const existing = c.find((x) => x.name === p.name);
+      if (existing) {
+        return c.map((x) => x.name === p.name ? { ...x, qty: x.qty + 1 } : x);
+      }
+      return [...c, { ...p, qty: 1 }];
+    });
+    setCartOpen(true);
+  }, []);
+
+  const onQty = useCallback((name, delta) => {
+    setCart((c) =>
+      c.map((x) => x.name === name ? { ...x, qty: Math.max(1, x.qty + delta) } : x)
+    );
+  }, []);
+
+  const onRemove = useCallback((name) => {
+    setCart((c) => c.filter((x) => x.name !== name));
+  }, []);
+
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  return (
+    <>
+      {/* Inject tokens + styles once */}
+      <style>{BRAND_CSS}</style>
+
+      {/* Top anchor */}
+      <span id="top" />
+
+      {annVisible && <Announcement onDismiss={() => setAnnVisible(false)} />}
+
+      <Header cartCount={cartCount} onOpenCart={() => setCartOpen(true)} />
+
+      <main>
+        <Hero />
+        <Trust />
+        <Categories />
+        <CampaignSplit />
+        <BestSellers onAddToCart={addToCart} onWishlist={() => {}} />
+        <Limited />
+        <Story />
+        <Craft />
+        <Bridal />
+        <Gifting />
+        <Why />
+        <Testimonials />
+        <Instagram />
+        <Visit />
+        <FAQ />
+        <Newsletter />
+      </main>
+
+      <Footer />
+
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        items={cart}
+        onQty={onQty}
+        onRemove={onRemove}
+      />
+    </>
+  );
+}

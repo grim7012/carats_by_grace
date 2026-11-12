@@ -1,0 +1,216 @@
+/* ─────────────────────────────────────────────
+   Footer.module.css  —  Carats by Grace
+───────────────────────────────────────────── */
+
+.footer {
+  background: #4A1124; /* --wine */
+  color: var(--ivory);
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 5vw, 5rem);
+}
+
+/* ── Top brand strip ── */
+.top {
+  padding: 4rem 0 2.5rem;
+}
+
+.brandRow {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.logoLink {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--ivory);
+}
+
+.logoImg {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.logoFallback {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: var(--text-xl);
+  letter-spacing: 0.18em;
+  font-weight: 400;
+  color: var(--ivory);
+}
+
+.logoImg + .logoFallback {
+  display: none;
+}
+
+.tagline {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: rgba(250, 246, 241, 0.65);
+  margin: 0;
+}
+
+/* ── Gold divider ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--gold);
+  margin: 0;
+  opacity: 0.5;
+}
+
+/* ── Link grid ── */
+.grid {
+  padding: 3rem 0;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2rem;
+}
+
+.col {
+  /* each column */
+}
+
+.colHeading {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 1.25rem;
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.footerLink {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: rgba(250, 246, 241, 0.75);
+  transition: color var(--transition-fast);
+  line-height: 1.4;
+}
+
+.footerLink:hover {
+  color: var(--ivory);
+}
+
+/* ── Bottom strip ── */
+.bottom {
+  border-top: 1px solid rgba(250, 246, 241, 0.12);
+  padding: 1.5rem 0 2rem;
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+/* Social icons */
+.socials {
+  display: flex;
+  gap: 1rem;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(250, 246, 241, 0.65);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.socialLink:hover {
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* Payment text */
+.payments {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: rgba(250, 246, 241, 0.5);
+  margin: 0;
+  margin-left: auto;
+}
+
+/* Back to top */
+.backToTop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(198, 161, 91, 0.4);
+  border-radius: 50%;
+  background: none;
+  color: var(--gold);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.backToTop:hover {
+  background: rgba(198, 161, 91, 0.1);
+  border-color: var(--gold);
+}
+
+/* Legal */
+.legal {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: rgba(250, 246, 241, 0.4);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .cols {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payments {
+    margin-left: 0;
+    width: 100%;
+    order: 3;
+  }
+
+  .bottomRow {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+}

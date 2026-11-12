@@ -1,0 +1,456 @@
+// src/pages/WishlistPage.jsx
+// Carats by Grace — Wishlist page
+// Tech: React (JSX). Shares brand tokens with HomePage/CollectionPage/ProductPage.
+// Structure: Hero → Toolbar (count, sort, move-all-to-bag, clear) → Grid of saved
+// items with "Move to bag" & "Remove" → Empty state → Recommended rail.
+
+import React, { useEffect, useMemo, useState } from "react";
+
+/* ===========================================================================
+   1. PAGE CSS (subset of brand tokens)
+=========================================================================== */
+const WISH_CSS = `
+:root{
+  --white:#FFFFFF; --ivory:#FAF6F1; --burgundy:#7B1E3A; --wine:#4A1124;
+  --gold:#C6A15B; --ink:#17120F; --muted:#7A6F70; --line:#E9E1D8;
+  --blush:#F1E3DC; --wine-deep:#3B0F1F; --rose-gold:#C9967F; --ruby:#A3152F;
+  --serif:"Cormorant Garamond","Playfair Display",Georgia,serif;
+  --sans:"Jost","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --pad-x:clamp(20px,5vw,80px);
+}
+.wl-wrap{max-width:1440px;margin:0 auto;padding-inline:var(--pad-x)}
+.wl-eyebrow{font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+.wl-display{font-family:var(--serif);font-weight:400;line-height:1.05;
+  letter-spacing:-.01em;margin:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.wl-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:0 22px;border-radius:1px;font-size:.74rem;
+  letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+  transition:all .3s var(--ease);border:1px solid transparent;white-space:nowrap}
+.wl-btn--solid{background:var(--burgundy);color:var(--ivory)}
+.wl-btn--solid:hover{background:var(--wine)}
+.wl-btn--ghost{border-color:var(--ink);color:var(--ink)}
+.wl-btn--ghost:hover{background:var(--ink);color:var(--ivory)}
+.wl-btn--text{background:transparent;border:0;color:var(--burgundy);
+  text-decoration:underline;text-underline-offset:4px;padding:0 4px;min-height:auto}
+.wl-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Hero */
+.wl-hero{padding-top:clamp(32px,5vw,56px);padding-bottom:clamp(24px,4vw,40px);
+  border-bottom:1px solid var(--line)}
+.wl-hero__inner{display:flex;justify-content:space-between;align-items:end;
+  gap:24px;flex-wrap:wrap}
+.wl-hero__title{font-family:var(--serif);font-weight:400;
+  font-size:clamp(2rem,4.4vw,3.2rem);line-height:1.04;margin:12px 0 10px}
+.wl-hero__lede{color:var(--muted);font-size:.95rem;margin:0;max-width:48ch}
+
+/* Toolbar */
+.wl-toolbar{display:flex;justify-content:space-between;align-items:center;
+  gap:16px;flex-wrap:wrap;padding-block:18px;border-bottom:1px solid var(--line)}
+.wl-toolbar__count{font-size:.78rem;letter-spacing:.06em;color:var(--muted)}
+.wl-toolbar__actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.wl-sort{min-height:44px;padding:0 40px 0 16px;border:1px solid var(--line);
+  background:var(--white) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2317120F' stroke-width='1.6'><path d='m6 9 6 6 6-6'/></svg>") no-repeat right 14px center;
+  font-family:var(--sans);font-size:.74rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink);appearance:none;cursor:pointer;
+  border-radius:1px}
+.wl-sort:focus{outline:2px solid var(--gold);outline-offset:2px}
+
+/* Grid */
+.wl-body{padding-block:clamp(32px,5vw,64px)}
+.wl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px 20px}
+.wl-empty{text-align:center;padding:clamp(56px,10vw,120px) 0;
+  border:1px solid var(--line);background:var(--ivory);max-width:720px;
+  margin:0 auto}
+.wl-empty h3{font-family:var(--serif);color:var(--ink);font-size:1.6rem;
+  font-weight:400;margin:0 0 10px}
+.wl-empty p{color:var(--muted);font-size:.9rem;margin:0 0 24px}
+.wl-empty__spark{display:inline-flex;gap:6px;color:var(--gold);font-size:1rem;
+  margin-bottom:8px}
+
+/* Card */
+.wl-card{position:relative;background:var(--white);display:flex;flex-direction:column}
+.wl-card__media{position:relative;aspect-ratio:4/5;overflow:hidden;
+  background:var(--blush);display:block}
+.wl-card__media img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;transition:opacity .55s var(--ease),transform .8s var(--ease)}
+.wl-card__img--hover{opacity:0}
+.wl-card:hover .wl-card__img--hover{opacity:1}
+.wl-card:hover .wl-card__img--main{opacity:0}
+.wl-card:hover .wl-card__media img{transform:scale(1.04)}
+.wl-card__remove{position:absolute;top:10px;right:10px;z-index:3;
+  width:40px;height:40px;display:grid;place-items:center;
+  background:rgba(250,246,241,.92);border-radius:999px;color:var(--ink);
+  opacity:0;transform:translateY(-6px);transition:all .3s var(--ease)}
+.wl-card:hover .wl-card__remove{opacity:1;transform:none}
+.wl-card__remove:hover{color:var(--ruby)}
+.wl-card__badge{position:absolute;top:10px;left:10px;z-index:3;
+  background:var(--ivory);color:var(--ink);font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;padding:6px 10px}
+.wl-card__badge--low{background:var(--burgundy);color:var(--ivory)}
+.wl-card__body{padding:14px 2px 0;display:flex;flex-direction:column;flex:1}
+.wl-card__name{font-family:var(--serif);font-size:1.02rem;margin:0 0 4px;
+  font-weight:500}
+.wl-card__spec{font-size:.72rem;color:var(--muted);margin:0 0 10px}
+.wl-card__row{display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:14px}
+.wl-card__price{font-size:.92rem;font-weight:500}
+.wl-card__move{margin-top:auto;width:100%;min-height:44px;background:transparent;
+  border:1px solid var(--ink);color:var(--ink);font-size:.7rem;letter-spacing:.16em;
+  text-transform:uppercase;transition:all .3s var(--ease);display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.wl-card__move:hover{background:var(--ink);color:var(--ivory)}
+.wl-card__move.is-added{background:var(--burgundy);border-color:var(--burgundy);
+  color:var(--ivory)}
+.wl-card__move:disabled{opacity:.5;cursor:not-allowed}
+
+/* Toast */
+.wl-toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%, 20px);
+  background:var(--ink);color:var(--ivory);font-size:.78rem;
+  letter-spacing:.08em;padding:14px 22px;z-index:100;opacity:0;
+  transition:all .35s var(--ease);pointer-events:none}
+.wl-toast.is-visible{opacity:1;transform:translate(-50%, 0)}
+
+/* Recommended */
+.wl-related{background:var(--ivory);padding-block:clamp(56px,8vw,96px)}
+.wl-related__head{display:flex;justify-content:space-between;align-items:end;
+  gap:24px;flex-wrap:wrap;margin-bottom:32px}
+.wl-related__title{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.3rem);
+  margin-top:12px}
+.wl-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);
+  gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.wl-rail::-webkit-scrollbar{height:4px}
+.wl-rail::-webkit-scrollbar-thumb{background:var(--line)}
+.wl-rail > *{scroll-snap-align:start}
+
+/* Responsive */
+@media (max-width:1024px){
+  .wl-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:768px){
+  .wl-grid{grid-template-columns:repeat(2,1fr);gap:22px 14px}
+  .wl-toolbar{padding-block:14px}
+  .wl-card__name{font-size:.94rem}
+  .wl-card__price{font-size:.84rem}
+  .wl-card__remove{opacity:1;transform:none}
+}
+@media (max-width:480px){
+  .wl-toolbar__actions{gap:6px}
+  .wl-btn{padding:0 16px;font-size:.7rem}
+}
+`;
+
+/* ===========================================================================
+   2. ICONS
+=========================================================================== */
+function Icon({ name, size = 18 }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+    stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round",
+    strokeLinejoin: "round", "aria-hidden": true,
+  };
+  const paths = {
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />,
+    close: <><path d="M6 6l12 12M18 6L6 18" /></>,
+    bag: <><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8a3 3 0 0 1 6 0" /></>,
+    arrowRight: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
+  };
+  return <svg {...common}>{paths[name] || null}</svg>;
+}
+
+const INR = (n) => "₹" + n.toLocaleString("en-IN");
+
+/* ===========================================================================
+   3. PLACEHOLDER DATA
+   In a real build this is fetched from GET /api/wishlist (per logged-in user).
+=========================================================================== */
+const INITIAL_ITEMS = [
+  {
+    id: "r1", name: "The Aurelia Ring", cat: "Rings",
+    spec: "18K Gold · 0.42 ct", price: 64000, inStock: true,
+    img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "r2", name: "Ruby Halo", cat: "Rings",
+    spec: "Rose Gold · Ruby", price: 132000, inStock: true, lowStock: true,
+    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "e2", name: "Petal Studs", cat: "Earrings",
+    spec: "Rose Gold", price: 32000, inStock: true,
+    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "n3", name: "Étoile Necklace", cat: "Necklaces",
+    spec: "18K · Diamonds", price: 156000, inStock: false,
+    img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "b1", name: "Slip Bracelet", cat: "Bracelets",
+    spec: "18K Gold", price: 58000, inStock: true,
+    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+  },
+];
+
+const RECOMMENDED = [
+  { id: "r4", name: "Étoile Band", spec: "18K Gold", price: 42000,
+    img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+  { id: "n1", name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000,
+    img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+  { id: "e1", name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000,
+    img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+  { id: "r3", name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000,
+    img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+];
+
+const SORTS = [
+  { key: "recent", label: "Recently added" },
+  { key: "price-asc", label: "Price · Low to High" },
+  { key: "price-desc", label: "Price · High to Low" },
+  { key: "az", label: "A–Z" },
+];
+
+/* ===========================================================================
+   4. HELPERS
+=========================================================================== */
+function MiniCard({ p }) {
+  return (
+    <a className="wl-card" href={`/product/${p.id}`}>
+      <div className="wl-card__media">
+        <img className="wl-card__img--main" src={p.img} alt={p.name} loading="lazy" />
+        <img className="wl-card__img--hover" src={p.hover} alt="" aria-hidden="true" loading="lazy" />
+      </div>
+      <div className="wl-card__body">
+        <h4 className="wl-card__name">{p.name}</h4>
+        <div className="wl-card__spec">{p.spec}</div>
+        <div className="wl-card__price">{INR(p.price)}</div>
+      </div>
+    </a>
+  );
+}
+
+function WishlistCard({ item, onRemove, onMove }) {
+  const [added, setAdded] = useState(false);
+  const [moving, setMoving] = useState(false);
+
+  const handleMove = () => {
+    if (!item.inStock) return;
+    setMoving(true);
+    onMove(item);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1400);
+    setTimeout(() => setMoving(false), 400);
+  };
+
+  return (
+    <article className="wl-card">
+      <a className="wl-card__media" href={`/product/${item.id}`}
+        aria-label={`View ${item.name}`}>
+        {item.lowStock && <span className="wl-card__badge wl-card__badge--low">Low stock</span>}
+        {!item.inStock && <span className="wl-card__badge">Sold out</span>}
+        <img className="wl-card__img--main" src={item.img}
+          alt={item.name} loading="lazy" />
+        <img className="wl-card__img--hover" src={item.hover}
+          alt="" aria-hidden="true" loading="lazy" />
+      </a>
+      <button className="wl-card__remove" aria-label={`Remove ${item.name} from wishlist`}
+        onClick={() => onRemove(item)}>
+        <Icon name="close" size={16} />
+      </button>
+      <div className="wl-card__body">
+        <h3 className="wl-card__name">{item.name}</h3>
+        <div className="wl-card__spec">{item.spec}</div>
+        <div className="wl-card__row">
+          <span className="wl-card__price">{INR(item.price)}</span>
+          <span className="wl-eyebrow" style={{ fontSize: ".6rem" }}>{item.cat}</span>
+        </div>
+        <button className={`wl-card__move ${added ? "is-added" : ""}`}
+          disabled={!item.inStock || moving}
+          onClick={handleMove}>
+          {added ? <>Added <Icon name="bag" size={14} /></> :
+            item.inStock ? <>Move to bag <Icon name="arrowRight" size={14} /></> :
+              "Sold out"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+/* ===========================================================================
+   5. PAGE
+=========================================================================== */
+export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
+  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [sort, setSort] = useState("recent");
+  const [toast, setToast] = useState("");
+  const [bulkWorking, setBulkWorking] = useState(false);
+
+  // Toast auto-hide
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2400);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Sorting
+  const sorted = useMemo(() => {
+    const list = [...items];
+    switch (sort) {
+      case "price-asc": return list.sort((a, b) => a.price - b.price);
+      case "price-desc": return list.sort((a, b) => b.price - a.price);
+      case "az": return list.sort((a, b) => a.name.localeCompare(b.name));
+      case "recent":
+      default: return list;
+    }
+  }, [items, sort]);
+
+  const count = items.length;
+  const inStockCount = items.filter((i) => i.inStock).length;
+
+  // ---- Actions
+  const remove = (item) => {
+    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    setToast(`${item.name} removed`);
+    onRemoveFromWishlist?.(item);
+    // PLACEHOLDER: DELETE /api/wishlist/:id
+  };
+
+  const moveToBag = (item) => {
+    onAddToCart?.(item);
+    setToast(`${item.name} moved to bag`);
+    // PLACEHOLDER: POST /api/cart  +  DELETE /api/wishlist/:id
+  };
+
+  const moveAll = () => {
+    const available = items.filter((i) => i.inStock);
+    if (!available.length) {
+      setToast("Nothing available to move to bag");
+      return;
+    }
+    setBulkWorking(true);
+    available.forEach((i) => onAddToCart?.(i));
+    setItems((prev) => prev.filter((i) => !i.inStock));
+    setToast(`${available.length} ${available.length === 1 ? "piece" : "pieces"} moved to bag`);
+    setTimeout(() => setBulkWorking(false), 600);
+    // PLACEHOLDER: batch POST /api/cart
+  };
+
+  const clearAll = () => {
+    if (!items.length) return;
+    setItems([]);
+    setToast("Wishlist cleared");
+    // PLACEHOLDER: DELETE /api/wishlist
+  };
+
+  return (
+    <main>
+      <style>{WISH_CSS}</style>
+
+      {/* ===== Hero ===== */}
+      <section className="wl-hero">
+        <div className="wl-wrap">
+          <div className="wl-hero__inner">
+            <div>
+              <span className="wl-eyebrow">Saved for later</span>
+              <h1 className="wl-hero__title">Your wishlist</h1>
+              <p className="wl-hero__lede">
+                The pieces you return to. Kept safe here so nothing slips.
+              </p>
+            </div>
+            <a className="wl-btn wl-btn--ghost" href="/collections">
+              Continue shopping
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Toolbar ===== */}
+      {count > 0 && (
+        <div className="wl-wrap">
+          <div className="wl-toolbar">
+            <span className="wl-toolbar__count">
+              {count} {count === 1 ? "piece" : "pieces"}
+              {inStockCount > 0 && ` · ${inStockCount} available`}
+            </span>
+            <div className="wl-toolbar__actions">
+              <label htmlFor="wl-sort" className="sr-only">Sort by</label>
+              <select id="wl-sort" className="wl-sort" value={sort}
+                onChange={(e) => setSort(e.target.value)}>
+                {SORTS.map((s) => (
+                  <option key={s.key} value={s.key}>{s.label}</option>
+                ))}
+              </select>
+              <button className="wl-btn wl-btn--solid" disabled={bulkWorking}
+                onClick={moveAll}>
+                Move all to bag
+              </button>
+              <button className="wl-btn wl-btn--text" onClick={clearAll}>
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Body ===== */}
+      <div className="wl-wrap wl-body">
+        {count === 0 ? (
+          <div className="wl-empty">
+            <div className="wl-empty__spark" aria-hidden="true">✦ ✦ ✦</div>
+            <h3>Nothing saved, yet.</h3>
+            <p>When you find something worth returning to, it lives here.</p>
+            <a className="wl-btn wl-btn--solid" href="/collections"
+              style={{ display: "inline-flex" }}>
+              Explore collections
+            </a>
+          </div>
+        ) : (
+          <div className="wl-grid">
+            {sorted.map((item) => (
+              <WishlistCard key={item.id} item={item}
+                onRemove={remove} onMove={moveToBag} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ===== Recommended ===== */}
+      <section className="wl-related" aria-labelledby="wl-rec">
+        <div className="wl-wrap">
+          <div className="wl-related__head">
+            <div>
+              <span className="wl-eyebrow">You may also like</span>
+              <h2 id="wl-rec" className="wl-related__title">A few we love for you</h2>
+            </div>
+            <a className="wl-btn wl-btn--ghost" href="/collections"
+              style={{ minHeight: 44 }}>
+              Explore All
+            </a>
+          </div>
+          <div className="wl-rail">
+            {RECOMMENDED.map((p) => <MiniCard key={p.id} p={p} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Toast ===== */}
+      <div className={`wl-toast ${toast ? "is-visible" : ""}`} role="status"
+        aria-live="polite">
+        {toast}
+      </div>
+    </main>
+  );
+}
