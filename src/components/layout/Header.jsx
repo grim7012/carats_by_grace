@@ -1,246 +1,269 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+// src/components/layout/Header.jsx
+// Carats by Grace — Global Header (for inner pages)
+// Matches the exact alignment, layout, and luxury aesthetic of the Home Page header.
+
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useUI } from '../../context/UIContext';
-import { navLinks } from '../../data/navigation';
 import styles from './Header.module.css';
 
 export default function Header() {
   const { totalItems, toggleCart } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { toggleSearch } = useUI();
+  const navigate = useNavigate();
 
-  const [scrolled, setScrolled] = useState(false);
-  const [activeMega, setActiveMega] = useState(null);
+  const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileAccordion, setMobileAccordion] = useState(null);
-
-  const headerRef = useRef(null);
-  const megaCloseTimer = useRef(null);
-  const triggerRefs = useRef({});
-
-  // Scroll behaviour
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 80);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Keyboard: Escape closes menus
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (activeMega) {
-          const label = activeMega;
-          setActiveMega(null);
-          triggerRefs.current[label]?.focus();
-        }
-        if (mobileOpen) setMobileOpen(false);
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [activeMega, mobileOpen]);
-
-  // Lock body scroll when mobile menu open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
-
-  const handleMegaEnter = useCallback((label) => {
-    clearTimeout(megaCloseTimer.current);
-    setActiveMega(label);
-  }, []);
-
-  const handleMegaLeave = useCallback(() => {
-    megaCloseTimer.current = setTimeout(() => setActiveMega(null), 150);
-  }, []);
-
-  const toggleMobileAccordion = (label) => {
-    setMobileAccordion((prev) => (prev === label ? null : label));
-  };
+  const [mobileGroup, setMobileGroup] = useState(null);
 
   const wishlistCount = wishlistItems?.length ?? 0;
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
+  const nav = [
+    { label: 'Rings', href: '/collections/rings', mega: true },
+    { label: 'Earrings', href: '/collections/earrings', mega: true },
+    { label: 'Necklaces', href: '/collections/necklaces', mega: true },
+    { label: 'Bracelets', href: '/collections/bracelets', mega: true },
+    { label: 'Bridal', href: '/collections/bridal' },
+    { label: 'Gifting', href: '/collections/gifting' },
+    { label: 'High Jewellery', href: '/collections/high-jewellery' },
+  ];
+
+  const megaData = {
+    'By Category': [
+      { name: 'Rings', href: '/collections/rings' },
+      { name: 'Earrings', href: '/collections/earrings' },
+      { name: 'Necklaces', href: '/collections/necklaces' },
+      { name: 'Bracelets', href: '/collections/bracelets' },
+      { name: 'Bangles', href: '/collections/bangles' },
+      { name: 'Pendants', href: '/collections/pendants' },
+    ],
+    'By Occasion': [
+      { name: 'Everyday', href: '/collections/everyday' },
+      { name: 'Gifting', href: '/collections/gifting' },
+      { name: 'Bridal', href: '/collections/bridal' },
+      { name: 'Festive', href: '/collections/festive' },
+      { name: 'Anniversary', href: '/collections/anniversary' },
+    ],
+    'By Price': [
+      { name: 'Under ₹50K', href: '/collections/under-50k' },
+      { name: '₹50K – ₹1L', href: '/collections/50k-1l' },
+      { name: 'Above ₹1L', href: '/collections/above-1l' },
+    ],
+  };
+
   return (
-    <header
-      ref={headerRef}
-      className={`${styles.header} ${scrolled ? styles.scrolled : styles.transparent}`}
-      role="banner"
-    >
+    <header className={styles.header} onMouseLeave={() => setMegaOpen(false)}>
       <div className={styles.inner}>
-        {/* ── Left nav (desktop) ── */}
+        {/* Mobile Hamburger on Left */}
+        <button
+          className={styles.burger}
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          type="button"
+        >
+          <Menu size={22} strokeWidth={1.5} />
+        </button>
+
+        {/* ── Left Nav Links (Desktop) ── */}
         <nav className={styles.navLeft} aria-label="Primary navigation">
-          <ul className={styles.navList}>
-            {navLinks.slice(0, 4).map((link) => (
-              <NavItem
-                key={link.label}
-                link={link}
-                active={activeMega === link.label}
-                onEnter={handleMegaEnter}
-                onLeave={handleMegaLeave}
-                triggerRef={(el) => { triggerRefs.current[link.label] = el; }}
-                scrolled={scrolled}
-              />
-            ))}
-          </ul>
+          {nav.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className={styles.navLink}
+              onMouseEnter={() => setMegaOpen(Boolean(item.mega))}
+              onFocus={() => setMegaOpen(Boolean(item.mega))}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        {/* ── Logo ── */}
+        {/* ── Logo (Centered) ── */}
         <div className={styles.logoWrap}>
           <Link to="/" className={styles.logoLink} aria-label="Carats by Grace — Home">
-            <img
-              src="/logo.png"
-              alt="Carats by Grace"
-              className={styles.logoImg}
-              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block'; }}
-            />
-            <span className={styles.logoFallback} aria-hidden="true">CARATS BY GRACE</span>
+            <span className={styles.logoText}>CG · CARATS BY GRACE</span>
           </Link>
         </div>
 
-        {/* ── Right nav (desktop) ── */}
-        <nav className={styles.navRight} aria-label="Secondary navigation">
-          <ul className={styles.navList}>
-            {navLinks.slice(4).map((link) => (
-              <NavItem
-                key={link.label}
-                link={link}
-                active={activeMega === link.label}
-                onEnter={handleMegaEnter}
-                onLeave={handleMegaLeave}
-                triggerRef={(el) => { triggerRefs.current[link.label] = el; }}
-                scrolled={scrolled}
-              />
-            ))}
-          </ul>
-        </nav>
-
-        {/* ── Utility icons ── */}
+        {/* ── Utility Icons (Right) ── */}
         <div className={styles.utilities}>
           <button
             className={styles.iconBtn}
             onClick={toggleSearch}
-            aria-label="Open search"
+            aria-label="Search"
+            type="button"
           >
             <Search size={20} strokeWidth={1.5} />
           </button>
 
-          <Link to="/wishlist" className={styles.iconBtn} aria-label={`Wishlist (${wishlistCount} items)`}>
+          <Link
+            to="/wishlist"
+            className={styles.iconBtn}
+            aria-label={`Wishlist (${wishlistCount} items)`}
+          >
             <Heart size={20} strokeWidth={1.5} />
             {wishlistCount > 0 && (
               <span className={styles.badge} aria-hidden="true">{wishlistCount}</span>
             )}
           </Link>
 
-          <Link to="/account" className={styles.iconBtn} aria-label="Account">
+          <button
+            className={styles.iconBtn}
+            onClick={() => navigate('/wishlist')}
+            aria-label="Account"
+            type="button"
+          >
             <User size={20} strokeWidth={1.5} />
-          </Link>
+          </button>
 
           <button
             className={styles.iconBtn}
             onClick={toggleCart}
-            aria-label={`Cart (${totalItems} items)`}
+            aria-label={`Bag (${totalItems} items)`}
+            type="button"
           >
             <ShoppingBag size={20} strokeWidth={1.5} />
             {totalItems > 0 && (
               <span className={styles.badge} aria-hidden="true">{totalItems}</span>
             )}
           </button>
-
-          {/* Mobile hamburger */}
-          <button
-            className={`${styles.iconBtn} ${styles.hamburger}`}
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
-            aria-expanded={mobileOpen}
-          >
-            <Menu size={22} strokeWidth={1.5} />
-          </button>
         </div>
       </div>
 
-      {/* ── Mega-menu panels ── */}
-      {navLinks.map((link) => (
-        <MegaMenu
-          key={link.label}
-          link={link}
-          active={activeMega === link.label}
-          onEnter={() => handleMegaEnter(link.label)}
-          onLeave={handleMegaLeave}
-        />
-      ))}
+      {/* ── Mega Menu ── */}
+      <div
+        className={`${styles.mega} ${megaOpen ? styles.megaOpen : ''}`}
+        onMouseEnter={() => setMegaOpen(true)}
+        onMouseLeave={() => setMegaOpen(false)}
+      >
+        <div className={styles.megaInner}>
+          {Object.entries(megaData).map(([heading, items]) => (
+            <div className={styles.megaCol} key={heading}>
+              <h4>{heading}</h4>
+              {items.map((it) => (
+                <Link
+                  key={it.name}
+                  to={it.href}
+                  onClick={() => setMegaOpen(false)}
+                >
+                  {it.name}
+                </Link>
+              ))}
+            </div>
+          ))}
 
-      {/* ── Mobile full-screen menu ── */}
+          <div className={styles.megaCol}>
+            <h4>Featured</h4>
+            <Link
+              className={styles.megaImg}
+              to="/collections/rings"
+              onClick={() => setMegaOpen(false)}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
+                alt="New collection preview"
+                loading="lazy"
+              />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile Menu Drawer ── */}
       <div
         className={`${styles.mobileMenu} ${mobileOpen ? styles.mobileMenuOpen : ''}`}
         aria-hidden={!mobileOpen}
       >
         <div className={styles.mobileHeader}>
-          <Link to="/" className={styles.logoLink} onClick={() => setMobileOpen(false)}>
-            <span className={styles.logoFallback}>CARATS BY GRACE</span>
+          <Link
+            to="/"
+            className={styles.logoLink}
+            onClick={() => setMobileOpen(false)}
+          >
+            <span className={styles.logoText} style={{ fontSize: '1.15rem' }}>
+              CG · CARATS BY GRACE
+            </span>
           </Link>
           <button
             className={styles.iconBtn}
             onClick={() => setMobileOpen(false)}
             aria-label="Close menu"
+            type="button"
           >
-            <X size={22} strokeWidth={1.5} />
+            <X size={20} strokeWidth={1.5} />
           </button>
         </div>
 
-        <nav aria-label="Mobile navigation">
-          <ul className={styles.mobileNavList}>
-            {navLinks.map((link) => (
-              <li key={link.label} className={styles.mobileNavItem}>
-                <button
-                  className={styles.mobileAccordionTrigger}
-                  onClick={() => toggleMobileAccordion(link.label)}
-                  aria-expanded={mobileAccordion === link.label}
-                >
-                  {link.label}
-                  <ChevronDown
-                    size={16}
-                    className={`${styles.chevron} ${mobileAccordion === link.label ? styles.chevronOpen : ''}`}
-                  />
-                </button>
-                {mobileAccordion === link.label && (
-                  <ul className={styles.mobileSubList}>
-                    {link.mega.byCategory.map((sub) => (
-                      <li key={sub}>
-                        <Link
-                          to={`${link.href}/${sub.toLowerCase().replace(/\s+/g, '-')}`}
-                          className={styles.mobileSubLink}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          {sub}
-                        </Link>
-                      </li>
-                    ))}
-                    <li>
-                      <Link to={link.href} className={`${styles.mobileSubLink} ${styles.viewAll}`} onClick={() => setMobileOpen(false)}>
-                        View All {link.label} →
-                      </Link>
-                    </li>
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className={styles.mobileBody}>
+          {Object.entries(megaData).map(([title, items]) => (
+            <div className={styles.mobileGroup} key={title}>
+              <button
+                className={styles.mobileTrigger}
+                aria-expanded={mobileGroup === title}
+                onClick={() =>
+                  setMobileGroup(mobileGroup === title ? null : title)
+                }
+                type="button"
+              >
+                <span>{title}</span>
+                <ChevronDown
+                  size={16}
+                  style={{
+                    transform: mobileGroup === title ? 'rotate(180deg)' : 'none',
+                    transition: 'transform .25s ease',
+                  }}
+                />
+              </button>
+              <div
+                className={styles.mobileSub}
+                style={{ maxHeight: mobileGroup === title ? 400 : 0 }}
+              >
+                {items.map((i) => (
+                  <Link
+                    key={i.name}
+                    to={i.href}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {i.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
-        <div className={styles.mobileUtilities}>
-          <Link to="/account" className={styles.mobileUtilLink} onClick={() => setMobileOpen(false)}>My Account</Link>
-          <Link to="/wishlist" className={styles.mobileUtilLink} onClick={() => setMobileOpen(false)}>Wishlist</Link>
-          <Link to="/collections/bridal" className={styles.mobileUtilLink} onClick={() => setMobileOpen(false)}>Bridal</Link>
+          {[
+            { label: 'Bridal', href: '/collections/bridal' },
+            { label: 'Gifting', href: '/collections/gifting' },
+            { label: 'High Jewellery', href: '/collections/high-jewellery' },
+            { label: 'Wishlist', href: '/wishlist' },
+            { label: 'My Account', href: '/account' },
+          ].map((l) => (
+            <div className={styles.mobileGroup} key={l.label}>
+              <Link
+                className={styles.mobileTrigger}
+                to={l.href}
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Mobile backdrop */}
       {mobileOpen && (
         <div
           className={styles.mobileOverlay}
@@ -249,122 +272,5 @@ export default function Header() {
         />
       )}
     </header>
-  );
-}
-
-/* ── NavItem component ── */
-function NavItem({ link, active, onEnter, onLeave, triggerRef, scrolled }) {
-  return (
-    <li
-      className={styles.navItem}
-      onMouseEnter={() => onEnter(link.label)}
-      onMouseLeave={onLeave}
-    >
-      <Link
-        to={link.href}
-        ref={triggerRef}
-        className={`${styles.navLink} ${active ? styles.navLinkActive : ''}`}
-        aria-haspopup={link.mega ? 'true' : undefined}
-        aria-expanded={active}
-        onFocus={() => onEnter(link.label)}
-        onBlur={onLeave}
-      >
-        {link.label}
-        {link.mega && <ChevronDown size={12} className={styles.navChevron} />}
-      </Link>
-    </li>
-  );
-}
-
-/* ── MegaMenu component ── */
-function MegaMenu({ link, active, onEnter, onLeave }) {
-  if (!link.mega) return null;
-
-  return (
-    <div
-      className={`${styles.mega} ${active ? styles.megaActive : ''}`}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-      role="region"
-      aria-label={`${link.label} menu`}
-    >
-      <div className={styles.megaInner}>
-        {/* Quick links row */}
-        <div className={styles.megaQuickRow}>
-          <Link to={`${link.href}?sort=latest`} className={styles.megaQuickLink}>Latest</Link>
-          <span className={styles.megaDot}>·</span>
-          <Link to={`${link.href}?sort=bestsellers`} className={styles.megaQuickLink}>Bestsellers</Link>
-        </div>
-
-        <div className={styles.megaGrid}>
-          {/* Col 1: By Category */}
-          <div className={styles.megaCol}>
-            <p className={styles.megaColTitle}>By Category</p>
-            <ul className={styles.megaLinkList}>
-              {link.mega.byCategory.map((item) => (
-                <li key={item}>
-                  <Link
-                    to={`${link.href}/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={styles.megaLink}
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 2: By Occasion */}
-          <div className={styles.megaCol}>
-            <p className={styles.megaColTitle}>By Occasion</p>
-            <ul className={styles.megaLinkList}>
-              {link.mega.byOccasion.map((item) => (
-                <li key={item}>
-                  <Link
-                    to={`${link.href}?occasion=${item.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={styles.megaLink}
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 3: By Price */}
-          <div className={styles.megaCol}>
-            <p className={styles.megaColTitle}>By Price</p>
-            <ul className={styles.megaLinkList}>
-              {[
-                { label: 'Under ₹50,000', param: 'under-50k' },
-                { label: '₹50K – ₹1 Lakh', param: '50k-1l' },
-                { label: 'Above ₹1 Lakh', param: 'above-1l' },
-              ].map((p) => (
-                <li key={p.param}>
-                  <Link
-                    to={`${link.href}?price=${p.param}`}
-                    className={styles.megaLink}
-                  >
-                    {p.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 4: Editorial image */}
-          <div className={styles.megaCol}>
-            <Link to={link.href} className={styles.megaEditorialLink}>
-              <img
-                src={`https://placehold.co/300x400/FAF6F1/7B1E3A?text=${encodeURIComponent(link.label)}`}
-                alt={`${link.label} editorial`}
-                className={styles.megaEditorialImg}
-              />
-              <span className={styles.megaEditorialLabel}>{link.label} Edit →</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

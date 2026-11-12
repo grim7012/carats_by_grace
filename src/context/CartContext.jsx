@@ -32,14 +32,14 @@ function cartReducer(state, action) {
     case 'REMOVE_ITEM':
       return {
         ...state,
-        items: state.items.filter((i) => i._cartKey !== action.cartKey),
+        items: state.items.filter((i) => i._cartKey !== action.cartKey && i.id !== action.cartKey),
       };
     case 'UPDATE_QTY':
       return {
         ...state,
         items: state.items
           .map((i) =>
-            i._cartKey === action.cartKey ? { ...i, qty: action.qty } : i
+            (i._cartKey === action.cartKey || i.id === action.cartKey) ? { ...i, qty: action.qty } : i
           )
           .filter((i) => i.qty > 0),
       };

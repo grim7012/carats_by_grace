@@ -5,6 +5,11 @@
 // PLACEHOLDER — replace with brand assets.
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import heroVideo from "../components/video/1794410894431085.mp4";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+import { useUI } from "../context/UIContext";
 
 /* ===========================================================================
    DESIGN TOKENS + GLOBAL STYLES
@@ -55,7 +60,8 @@ button{font-family:inherit;cursor:pointer;background:none;border:0}
 
 /* Announcement */
 .cg-ann{background:var(--burgundy);color:var(--ivory);font-size:.7rem;
-  letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:70}
+  letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:2;width:100%;
+  border-bottom:1px solid rgba(250,246,241,.12)}
 .cg-ann__inner{display:flex;align-items:center;justify-content:center;
   min-height:38px;gap:16px;padding:6px var(--pad-x);text-align:center}
 .cg-ann__msg{transition:opacity .5s var(--ease)}
@@ -64,8 +70,12 @@ button{font-family:inherit;cursor:pointer;background:none;border:0}
   width:44px;height:44px;display:grid;place-items:center}
 .cg-ann__x:hover{opacity:1}
 
+/* Top bar wrapper — absolute at top of hero, scrolls up naturally with the page */
+.cg-header-wrapper{position:absolute;top:0;left:0;right:0;z-index:70;display:flex;
+  flex-direction:column;width:100%}
+
 /* Header */
-.cg-header{position:fixed;inset:0 0 auto 0;z-index:60;
+.cg-header{position:relative;width:100%;z-index:1;
   transition:background .35s var(--ease),box-shadow .35s var(--ease),
   border-color .35s var(--ease);border-bottom:1px solid transparent}
 .cg-header.is-scrolled{background:var(--white);border-bottom:1px solid var(--line);
@@ -83,29 +93,33 @@ button{font-family:inherit;cursor:pointer;background:none;border:0}
 .cg-logo img{height:44px;width:auto}
 .cg-logo span{color:inherit;transition:color .25s var(--ease)}
 .cg-header__util{display:flex;gap:6px;justify-content:flex-end;align-items:center}
-.cg-header__util button{width:44px;height:44px;display:grid;place-items:center;
+.cg-header__util button,
+.cg-header__util a{width:44px;height:44px;display:grid;place-items:center;
   color:var(--ink);position:relative;transition:color .3s var(--ease)}
-.cg-cart-count{position:absolute;top:6px;right:6px;min-width:16px;height:16px;
+.cg-cart-count,
+.cg-wish-count{position:absolute;top:6px;right:6px;min-width:16px;height:16px;
   background:var(--burgundy);color:var(--ivory);font-size:.6rem;border-radius:999px;
-  display:grid;place-items:center;padding:0 4px}
+  display:grid;place-items:center;padding:0 4px;font-family:var(--sans);font-weight:600;line-height:1}
 .cg-burger{display:none}
 
 /* Header over dark hero — ivory text + soft top scrim for legibility */
-.cg-header.is-onhero:not(.is-scrolled){
+.cg-header.is-onhero{
   background:linear-gradient(180deg,rgba(23,18,15,.55),rgba(23,18,15,0));
 }
-.cg-header.is-onhero:not(.is-scrolled) .cg-header__nav a,
-.cg-header.is-onhero:not(.is-scrolled) .cg-header__util button,
-.cg-header.is-onhero:not(.is-scrolled) .cg-logo,
-.cg-header.is-onhero:not(.is-scrolled) .cg-logo span,
-.cg-header.is-onhero:not(.is-scrolled) .cg-burger{
+.cg-header.is-onhero .cg-header__nav a,
+.cg-header.is-onhero .cg-header__util button,
+.cg-header.is-onhero .cg-header__util a,
+.cg-header.is-onhero .cg-logo,
+.cg-header.is-onhero .cg-logo span,
+.cg-header.is-onhero .cg-burger{
   color:var(--ivory);
   text-shadow:0 1px 2px rgba(0,0,0,.45);
 }
-.cg-header.is-onhero:not(.is-scrolled) .cg-header__nav a::after{
+.cg-header.is-onhero .cg-header__nav a::after{
   background:var(--ivory);
 }
-.cg-header.is-onhero:not(.is-scrolled) .cg-cart-count{
+.cg-header.is-onhero .cg-cart-count,
+.cg-header.is-onhero .cg-wish-count{
   background:var(--ivory);color:var(--burgundy);
 }
 
@@ -130,9 +144,10 @@ button{font-family:inherit;cursor:pointer;background:none;border:0}
 /* Hero — video only, continuous loop */
 .cg-hero{position:relative;min-height:100svh;display:grid;overflow:hidden;
   background:var(--ink)}
-.cg-hero__media{position:absolute;inset:0;overflow:hidden;background:var(--ink)}
+.cg-hero__media{position:absolute;inset:0;overflow:hidden;background:var(--ink);
+  pointer-events:none;user-select:none}
 .cg-hero__media video{width:100%;height:100%;object-fit:cover;
-  object-position:62% 40%;display:block}
+  object-position:62% 40%;display:block;pointer-events:none;user-select:none}
 .cg-hero__media::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,
     rgba(23,18,15,.55) 0%,
@@ -500,9 +515,8 @@ button{font-family:inherit;cursor:pointer;background:none;border:0}
    PLACEHOLDER DATA
 =========================================================================== */
 const IMG = {
-  // Hero is video-only now. Replace BOTH URLs with your own looping assets.
-  heroVideoMp4:  "src\\components\\video\\1794410894431085.mp4",
-  heroVideoWebm: "https://cdn.example.com/carats/hero.webm",
+  heroVideoMp4:  heroVideo,
+  heroVideoWebm: "",
   logo: "", // ← your CG logo file (e.g. /logo.svg)
 };
 
@@ -674,30 +688,50 @@ function Header({ cartCount, onOpenCart }) {
   const [mobileGroup, setMobileGroup] = useState(null);
   const onHero = true;
 
+  const { toggleSearch } = useUI();
+  const { items: wishlistItems } = useWishlist();
+  const wishlistCount = wishlistItems?.length ?? 0;
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
   const nav = [
-    { label: "Rings", mega: true },
-    { label: "Earrings", mega: true },
-    { label: "Necklaces", mega: true },
-    { label: "Bracelets", mega: true },
-    { label: "Bridal" },
-    { label: "Gifting" },
-    { label: "High Jewellery" },
+    { label: "Rings", href: "/collections/rings", mega: true },
+    { label: "Earrings", href: "/collections/earrings", mega: true },
+    { label: "Necklaces", href: "/collections/necklaces", mega: true },
+    { label: "Bracelets", href: "/collections/bracelets", mega: true },
+    { label: "Bridal", href: "/collections/bridal" },
+    { label: "Gifting", href: "/collections/gifting" },
+    { label: "High Jewellery", href: "/collections/high-jewellery" },
   ];
 
   const megaData = {
-    "By Category": ["Rings", "Earrings", "Necklaces", "Bracelets", "Bangles", "Pendants"],
-    "By Occasion": ["Everyday", "Gifting", "Bridal", "Festive", "Anniversary"],
-    "By Price": ["Under ₹50K", "₹50K – ₹1L", "Above ₹1L"],
+    "By Category": [
+      { name: "Rings", href: "/collections/rings" },
+      { name: "Earrings", href: "/collections/earrings" },
+      { name: "Necklaces", href: "/collections/necklaces" },
+      { name: "Bracelets", href: "/collections/bracelets" },
+      { name: "Bangles", href: "/collections/bangles" },
+      { name: "Pendants", href: "/collections/pendants" },
+    ],
+    "By Occasion": [
+      { name: "Everyday", href: "/collections/everyday" },
+      { name: "Gifting", href: "/collections/gifting" },
+      { name: "Bridal", href: "/collections/bridal" },
+      { name: "Festive", href: "/collections/festive" },
+      { name: "Anniversary", href: "/collections/anniversary" },
+    ],
+    "By Price": [
+      { name: "Under ₹50K", href: "/collections/under-50k" },
+      { name: "₹50K – ₹1L", href: "/collections/50k-1l" },
+      { name: "Above ₹1L", href: "/collections/above-1l" },
+    ],
   };
 
-  const cls = ["cg-header",
-    scrolled ? "is-scrolled" : "",
-    onHero ? "is-onhero" : ""].filter(Boolean).join(" ");
+  const cls = ["cg-header", "is-onhero"].filter(Boolean).join(" ");
 
   return (
     <header className={cls}
@@ -710,11 +744,11 @@ function Header({ cartCount, onOpenCart }) {
             <Icon name="menu" />
           </button>
           {nav.map((n) => (
-            <a key={n.label} href="#"
+            <Link key={n.label} to={n.href}
               onMouseEnter={() => setMegaOpen(!!n.mega)}
               onFocus={() => setMegaOpen(!!n.mega)}>
               {n.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -723,7 +757,7 @@ function Header({ cartCount, onOpenCart }) {
           <Icon name="menu" />
         </button>
 
-        <a className="cg-logo" href="/" aria-label="Carats by Grace — home">
+        <Link className="cg-logo" to="/" aria-label="Carats by Grace — home">
           {IMG.logo ? (
             <img src={IMG.logo} alt="Carats by Grace" />
           ) : (
@@ -732,13 +766,20 @@ function Header({ cartCount, onOpenCart }) {
               letterSpacing: ".1em", color: "inherit"
             }}>CG · CARATS BY GRACE</span>
           )}
-        </a>
+        </Link>
 
         <div className="cg-header__util">
-          <button aria-label="Search"><Icon name="search" /></button>
-          <button aria-label="Wishlist"><Icon name="heart" /></button>
-          <button aria-label="Account"><Icon name="user" /></button>
-          <button aria-label={`Cart, ${cartCount} items`} onClick={onOpenCart}>
+          <button aria-label="Search" type="button" onClick={toggleSearch}>
+            <Icon name="search" />
+          </button>
+          <Link to="/wishlist" aria-label={`Wishlist (${wishlistCount} items)`}>
+            <Icon name="heart" />
+            {wishlistCount > 0 && <span className="cg-wish-count">{wishlistCount}</span>}
+          </Link>
+          <button aria-label="Account" type="button" onClick={() => navigate('/wishlist')}>
+            <Icon name="user" />
+          </button>
+          <button aria-label={`Cart, ${cartCount} items`} type="button" onClick={onOpenCart}>
             <Icon name="bag" />
             {cartCount > 0 && <span className="cg-cart-count">{cartCount}</span>}
           </button>
@@ -753,20 +794,24 @@ function Header({ cartCount, onOpenCart }) {
           {Object.entries(megaData).map(([title, items]) => (
             <div className="cg-mega__col" key={title}>
               <h4>{title}</h4>
-              {items.map((i) => <a key={i} href="#">{i}</a>)}
+              {items.map((i) => (
+                <Link key={i.name} to={i.href} onClick={() => setMegaOpen(false)}>
+                  {i.name}
+                </Link>
+              ))}
             </div>
           ))}
           <div className="cg-mega__col">
             <h4>Discover</h4>
-            <a href="#">Latest Arrivals</a>
-            <a href="#">Bestsellers</a>
-            <a href="#">The Bridal Edit</a>
-            <a href="#">Book a Consultation</a>
+            <Link to="/collections/latest" onClick={() => setMegaOpen(false)}>Latest Arrivals</Link>
+            <Link to="/collections/bestsellers" onClick={() => setMegaOpen(false)}>Bestsellers</Link>
+            <Link to="/collections/bridal" onClick={() => setMegaOpen(false)}>The Bridal Edit</Link>
+            <a href="#visit" onClick={() => setMegaOpen(false)}>Book a Consultation</a>
           </div>
-          <a className="cg-mega__img" href="#">
+          <Link className="cg-mega__img" to="/collections/rings" onClick={() => setMegaOpen(false)}>
             <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
               alt="Editorial: model wearing Carats by Grace rings" loading="lazy" />
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -792,13 +837,30 @@ function Header({ cartCount, onOpenCart }) {
               </button>
               <div className="cg-mobile__sub"
                 style={{ maxHeight: mobileGroup === g.key ? 400 : 0 }}>
-                {g.items.map((i) => <a key={i} href="#">{i}</a>)}
+                {g.items.map((i) => (
+                  <Link key={i.name} to={i.href} onClick={() => setMobileOpen(false)}>
+                    {i.name}
+                  </Link>
+                ))}
               </div>
             </div>
           ))}
-          {["Bridal", "Gifting", "High Jewellery", "Book a Consultation"].map((l) => (
-            <div className="cg-mobile__group" key={l}>
-              <a className="cg-mobile__trigger" href="#">{l}</a>
+          {[
+            { label: "Bridal", href: "/collections/bridal" },
+            { label: "Gifting", href: "/collections/gifting" },
+            { label: "High Jewellery", href: "/collections/high-jewellery" },
+            { label: "Book a Consultation", href: "#visit" },
+          ].map((l) => (
+            <div className="cg-mobile__group" key={l.label}>
+              {l.href.startsWith("#") ? (
+                <a className="cg-mobile__trigger" href={l.href} onClick={() => setMobileOpen(false)}>
+                  {l.label}
+                </a>
+              ) : (
+                <Link className="cg-mobile__trigger" to={l.href} onClick={() => setMobileOpen(false)}>
+                  {l.label}
+                </Link>
+              )}
             </div>
           ))}
         </div>
@@ -815,30 +877,49 @@ function Hero() {
     const v = videoRef.current;
     if (!v) return;
 
-    // Ensure the muted PROPERTY is set before the browser decides to autoplay.
     v.muted = true;
     v.defaultMuted = true;
+    v.loop = true;
 
-    const tryPlay = () => {
+    const playVideo = () => {
       const p = v.play();
       if (p && typeof p.catch === "function") {
         p.catch(() => {
-          // Autoplay blocked (iOS low-power mode etc.) — resume on first user gesture.
-          const resume = () => {
+          const onUserGesture = () => {
             v.play().catch(() => {});
-            window.removeEventListener("pointerdown", resume);
-            window.removeEventListener("touchstart", resume);
+            window.removeEventListener("pointerdown", onUserGesture);
+            window.removeEventListener("touchstart", onUserGesture);
+            window.removeEventListener("keydown", onUserGesture);
           };
-          window.addEventListener("pointerdown", resume, { once: true });
-          window.addEventListener("touchstart", resume, { once: true });
+          window.addEventListener("pointerdown", onUserGesture, { once: true });
+          window.addEventListener("touchstart", onUserGesture, { once: true });
+          window.addEventListener("keydown", onUserGesture, { once: true });
         });
       }
     };
 
-    if (v.readyState >= 2) tryPlay();
-    else v.addEventListener("loadeddata", tryPlay, { once: true });
+    if (v.readyState >= 2) {
+      playVideo();
+    } else {
+      v.addEventListener("loadeddata", playVideo, { once: true });
+      v.addEventListener("canplay", playVideo, { once: true });
+    }
 
-    return () => v.removeEventListener("loadeddata", tryPlay);
+    const keepPlaying = () => {
+      if (!v.ended && document.visibilityState !== "hidden") {
+        v.play().catch(() => {});
+      }
+    };
+
+    v.addEventListener("pause", keepPlaying);
+    v.addEventListener("waiting", keepPlaying);
+
+    return () => {
+      v.removeEventListener("loadeddata", playVideo);
+      v.removeEventListener("canplay", playVideo);
+      v.removeEventListener("pause", keepPlaying);
+      v.removeEventListener("waiting", keepPlaying);
+    };
   }, []);
 
   return (
@@ -846,6 +927,7 @@ function Hero() {
       <div className="cg-hero__media">
         <video
           ref={videoRef}
+          src={heroVideo}
           autoPlay
           loop
           muted
@@ -854,12 +936,7 @@ function Hero() {
           disablePictureInPicture
           disableRemotePlayback
           aria-label="Campaign film — model wearing Carats by Grace jewellery"
-        >
-          {IMG.heroVideoWebm && (
-            <source src={IMG.heroVideoWebm} type="video/webm" />
-          )}
-          <source src={IMG.heroVideoMp4} type="video/mp4" />
-        </video>
+        />
       </div>
       <div className="cg-hero__copy">
         <span className="cg-eyebrow">The Nocturne Edit · 2024</span>
@@ -869,8 +946,8 @@ function Hero() {
           Quietly luminous, deliberately yours.
         </p>
         <div className="cg-hero__ctas">
-          <a className="cg-btn cg-btn--solid" href="#">Shop the Collection</a>
-          <a className="cg-btn cg-btn--ghost-light" href="#">Book a Consultation</a>
+          <Link className="cg-btn cg-btn--solid" to="/collections/all">Shop the Collection</Link>
+          <a className="cg-btn cg-btn--ghost-light" href="#visit">Book a Consultation</a>
         </div>
       </div>
       <div className="cg-scrollcue" aria-hidden="true">
@@ -962,11 +1039,12 @@ function CampaignSplit() {
 }
 
 /* Best Sellers */
-function BestSellers({ onAddToCart, onWishlist }) {
+function BestSellers() {
   const tabs = ["Rings", "Earrings", "Necklaces", "All"];
   const [tab, setTab] = useState("Rings");
-  const [saved, setSaved] = useState({});
   const railRef = useRef(null);
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const { openQuickView } = useUI();
 
   const list = tab === "All"
     ? [...PRODUCTS.Rings, ...PRODUCTS.Earrings, ...PRODUCTS.Necklaces]
@@ -1009,7 +1087,7 @@ function BestSellers({ onAddToCart, onWishlist }) {
 
       <div className="cg-rail" ref={railRef} role="tabpanel" aria-label={tab}>
         {list.map((p, i) => {
-          const isSaved = !!saved[p.name];
+          const isSaved = isWishlisted(p.name);
           return (
             <article className="cg-card reveal" key={p.name + i}
               style={{ transitionDelay: `${i * 40}ms` }}>
@@ -1022,18 +1100,31 @@ function BestSellers({ onAddToCart, onWishlist }) {
                   className={`cg-card__wish ${isSaved ? "is-saved" : ""}`}
                   aria-label={isSaved ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
                   aria-pressed={isSaved}
-                  onClick={() => {
-                    setSaved((s) => ({ ...s, [p.name]: !s[p.name] }));
-                    onWishlist && onWishlist(p);
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist({
+                      id: p.name.toLowerCase().replace(/\s+/g, '-'),
+                      name: p.name,
+                      spec: p.spec,
+                      price: p.price,
+                      img: p.img,
+                      hover: p.hover,
+                      inStock: true,
+                      cat: tab === "All" ? "Jewellery" : tab,
+                    });
                   }}>
                   <Icon name="heart" size={18} />
                 </button>
                 <button className="cg-card__add"
-                  onClick={() => onAddToCart && onAddToCart(p)}>
-                  Add <span aria-hidden="true">+</span>
+                  type="button"
+                  onClick={() => openQuickView({ ...p, cat: tab === "All" ? "Jewellery" : tab })}>
+                  Enquire <span aria-hidden="true">✦</span>
                 </button>
               </div>
-              <div className="cg-card__body">
+              <div className="cg-card__body"
+                onClick={() => openQuickView({ ...p, cat: tab === "All" ? "Jewellery" : tab })}
+                style={{ cursor: "pointer" }}>
                 <h3 className="cg-card__name">{p.name}</h3>
                 <span className="cg-card__spec">{p.spec}</span>
                 <div className="cg-card__price">{INR(p.price)}</div>
@@ -1044,7 +1135,7 @@ function BestSellers({ onAddToCart, onWishlist }) {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 36 }}>
-        <a className="cg-btn cg-btn--ghost" href="#">Explore More</a>
+        <Link className="cg-btn cg-btn--ghost" to="/collections/bestsellers">Explore More</Link>
       </div>
     </section>
   );
@@ -1503,130 +1594,28 @@ function Footer() {
   );
 }
 
-/* Cart drawer */
-function CartDrawer({ open, onClose, items, onQty, onRemove }) {
-  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    if (open) document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-  return (
-    <>
-      <div onClick={onClose}
-        style={{
-          position: "fixed", inset: 0, background: "rgba(23,18,15,.32)",
-          opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none",
-          transition: "opacity .3s var(--ease)", zIndex: 95,
-        }} aria-hidden="true" />
-      <aside role="dialog" aria-modal="true" aria-label="Shopping cart"
-        style={{
-          position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)",
-          background: "var(--white)", zIndex: 96,
-          transform: open ? "translateX(0)" : "translateX(100%)",
-          transition: "transform .4s var(--ease)",
-          display: "flex", flexDirection: "column",
-          boxShadow: "0 0 40px rgba(23,18,15,.18)",
-        }}>
-        <div style={{ display: "flex", alignItems: "center",
-          justifyContent: "space-between", padding: "18px 24px",
-          borderBottom: "1px solid var(--line)" }}>
-          <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.3rem", margin: 0 }}>
-            Your cart
-          </h3>
-          <button aria-label="Close cart" onClick={onClose}>
-            <Icon name="close" />
-          </button>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
-          {items.length === 0 && (
-            <p style={{ color: "var(--muted)", fontSize: ".9rem" }}>
-              Your cart is empty. Begin with the new edit.
-            </p>
-          )}
-          {items.map((i) => (
-            <div key={i.name} style={{ display: "grid",
-              gridTemplateColumns: "72px 1fr auto", gap: 14,
-              paddingBottom: 18, marginBottom: 18,
-              borderBottom: "1px solid var(--line)" }}>
-              <img src={i.img} alt={i.name}
-                style={{ width: 72, height: 90, objectFit: "cover" }} />
-              <div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: "1rem" }}>{i.name}</div>
-                <div style={{ fontSize: ".76rem", color: "var(--muted)", margin: "4px 0 8px" }}>{i.spec}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button aria-label="Decrease" onClick={() => onQty(i.name, -1)}
-                    style={{ width: 28, height: 28, border: "1px solid var(--line)" }}>−</button>
-                  <span style={{ minWidth: 20, textAlign: "center", fontSize: ".9rem" }}>{i.qty}</span>
-                  <button aria-label="Increase" onClick={() => onQty(i.name, 1)}
-                    style={{ width: 28, height: 28, border: "1px solid var(--line)" }}>+</button>
-                </div>
-              </div>
-              <div style={{ textAlign: "right", fontSize: ".86rem" }}>
-                {INR(i.price * i.qty)}
-                <div>
-                  <button onClick={() => onRemove(i.name)}
-                    style={{ fontSize: ".68rem", color: "var(--muted)",
-                      textTransform: "uppercase", letterSpacing: ".12em", marginTop: 8 }}>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: "20px 24px", borderTop: "1px solid var(--line)" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 8,
-            fontSize: ".8rem", color: "var(--muted)", marginBottom: 12 }}>
-            <input type="checkbox" /> Add gift wrapping
-          </label>
-          <div style={{ display: "flex", justifyContent: "space-between",
-            fontSize: ".95rem", marginBottom: 16 }}>
-            <span>Subtotal</span>
-            <span style={{ fontWeight: 500 }}>{INR(subtotal)}</span>
-          </div>
-          <button className="cg-btn cg-btn--solid" style={{ width: "100%" }}
-            disabled={!items.length}>
-            Checkout
-          </button>
-        </div>
-      </aside>
-    </>
-  );
-}
 
 /* ===========================================================================
    PAGE
 =========================================================================== */
 export default function HomePage() {
   const [annVisible, setAnnVisible] = useState(true);
-  const [cart, setCart] = useState([]);
-  const [cartOpen, setCartOpen] = useState(false);
+  const { totalItems, toggleCart, addItem } = useCart();
+  const scrolled = useScrolled();
 
   useReveal();
 
-  const addToCart = useCallback((p) => {
-    setCart((c) => {
-      const existing = c.find((x) => x.name === p.name);
-      if (existing) {
-        return c.map((x) => x.name === p.name ? { ...x, qty: x.qty + 1 } : x);
-      }
-      return [...c, { ...p, qty: 1 }];
+  const handleAddToCart = useCallback((p) => {
+    addItem({
+      id: p.name.toLowerCase().replace(/\s+/g, '-'),
+      name: p.name,
+      price: p.price,
+      spec: p.spec,
+      image: p.img,
+      img: p.img,
+      qty: 1,
     });
-    setCartOpen(true);
-  }, []);
-
-  const onQty = useCallback((name, delta) => {
-    setCart((c) =>
-      c.map((x) => x.name === name ? { ...x, qty: Math.max(1, x.qty + delta) } : x)
-    );
-  }, []);
-
-  const onRemove = useCallback((name) => {
-    setCart((c) => c.filter((x) => x.name !== name));
-  }, []);
-
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  }, [addItem]);
 
   return (
     <>
@@ -1636,16 +1625,18 @@ export default function HomePage() {
       {/* Top anchor */}
       <span id="top" />
 
-      {annVisible && <Announcement onDismiss={() => setAnnVisible(false)} />}
-
-      <Header cartCount={cartCount} onOpenCart={() => setCartOpen(true)} />
+      {/* Top Header Wrapper: Announcement on top, Header directly beneath it (scrolls up naturally with page) */}
+      <div className="cg-header-wrapper">
+        {annVisible && <Announcement onDismiss={() => setAnnVisible(false)} />}
+        <Header cartCount={totalItems} onOpenCart={toggleCart} />
+      </div>
 
       <main>
         <Hero />
         <Trust />
         <Categories />
         <CampaignSplit />
-        <BestSellers onAddToCart={addToCart} onWishlist={() => {}} />
+        <BestSellers />
         <Limited />
         <Story />
         <Craft />
@@ -1660,14 +1651,6 @@ export default function HomePage() {
       </main>
 
       <Footer />
-
-      <CartDrawer
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-        items={cart}
-        onQty={onQty}
-        onRemove={onRemove}
-      />
     </>
   );
 }

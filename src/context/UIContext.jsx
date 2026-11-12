@@ -5,6 +5,7 @@ const UIContext = createContext(null);
 export function UIProvider({ children }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [announcementVisible, setAnnouncementVisible] = useState(true);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
 
   const toggleSearch = useCallback(
     () => setSearchOpen((prev) => !prev),
@@ -16,9 +17,25 @@ export function UIProvider({ children }) {
     []
   );
 
+  const openQuickView = useCallback((product) => {
+    setQuickViewProduct(product);
+  }, []);
+
+  const closeQuickView = useCallback(() => {
+    setQuickViewProduct(null);
+  }, []);
+
   const value = useMemo(
-    () => ({ searchOpen, announcementVisible, toggleSearch, dismissAnnouncement }),
-    [searchOpen, announcementVisible, toggleSearch, dismissAnnouncement]
+    () => ({
+      searchOpen,
+      announcementVisible,
+      quickViewProduct,
+      toggleSearch,
+      dismissAnnouncement,
+      openQuickView,
+      closeQuickView,
+    }),
+    [searchOpen, announcementVisible, quickViewProduct, toggleSearch, dismissAnnouncement, openQuickView, closeQuickView]
   );
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

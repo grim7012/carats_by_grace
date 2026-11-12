@@ -5,6 +5,9 @@
 // items with "Move to bag" & "Remove" → Empty state → Recommended rail.
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
+import { useUI } from "../context/UIContext";
 
 /* ===========================================================================
    1. PAGE CSS (subset of brand tokens)
@@ -226,9 +229,9 @@ const SORTS = [
 /* ===========================================================================
    4. HELPERS
 =========================================================================== */
-function MiniCard({ p }) {
+function MiniCard({ p, onEnquire }) {
   return (
-    <a className="wl-card" href={`/product/${p.id}`}>
+    <div className="wl-card" onClick={() => onEnquire?.(p)} style={{ cursor: "pointer" }}>
       <div className="wl-card__media">
         <img className="wl-card__img--main" src={p.img} alt={p.name} loading="lazy" />
         <img className="wl-card__img--hover" src={p.hover} alt="" aria-hidden="true" loading="lazy" />
@@ -238,51 +241,39 @@ function MiniCard({ p }) {
         <div className="wl-card__spec">{p.spec}</div>
         <div className="wl-card__price">{INR(p.price)}</div>
       </div>
-    </a>
+    </div>
   );
 }
 
-function WishlistCard({ item, onRemove, onMove }) {
-  const [added, setAdded] = useState(false);
-  const [moving, setMoving] = useState(false);
-
-  const handleMove = () => {
-    if (!item.inStock) return;
-    setMoving(true);
-    onMove(item);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1400);
-    setTimeout(() => setMoving(false), 400);
-  };
-
+function WishlistCard({ item, onRemove, onEnquire }) {
   return (
     <article className="wl-card">
-      <a className="wl-card__media" href={`/product/${item.id}`}
-        aria-label={`View ${item.name}`}>
+      <div className="wl-card__media" onClick={() => onEnquire?.(item)}
+        style={{ cursor: "pointer" }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${item.name}`}>
         {item.lowStock && <span className="wl-card__badge wl-card__badge--low">Low stock</span>}
         {!item.inStock && <span className="wl-card__badge">Sold out</span>}
         <img className="wl-card__img--main" src={item.img}
           alt={item.name} loading="lazy" />
         <img className="wl-card__img--hover" src={item.hover}
           alt="" aria-hidden="true" loading="lazy" />
-      </a>
+      </div>
       <button className="wl-card__remove" aria-label={`Remove ${item.name} from wishlist`}
         onClick={() => onRemove(item)}>
         <Icon name="close" size={16} />
       </button>
       <div className="wl-card__body">
-        <h3 className="wl-card__name">{item.name}</h3>
+        <h3 className="wl-card__name" onClick={() => onEnquire?.(item)} style={{ cursor: "pointer" }}>{item.name}</h3>
         <div className="wl-card__spec">{item.spec}</div>
         <div className="wl-card__row">
           <span className="wl-card__price">{INR(item.price)}</span>
           <span className="wl-eyebrow" style={{ fontSize: ".6rem" }}>{item.cat}</span>
         </div>
-        <button className={`wl-card__move ${added ? "is-added" : ""}`}
-          disabled={!item.inStock || moving}
-          onClick={handleMove}>
-          {added ? <>Added <Icon name="bag" size={14} /></> :
-            item.inStock ? <>Move to bag <Icon name="arrowRight" size={14} /></> :
-              "Sold out"}
+        <button className="wl-card__move"
+          onClick={() => onEnquire?.(item)}>
+          Enquire Now <Icon name="arrowRight" size={14} />
         </button>
       </div>
     </article>
@@ -293,10 +284,14 @@ function WishlistCard({ item, onRemove, onMove }) {
    5. PAGE
 =========================================================================== */
 export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
-  const [items, setItems] = useState(INITIAL_ITEMS);
+  const { items: wishlistItems, toggleWishlist, clearWishlist: clearWishlistCtx } = useWishlist();
+  const { addItem: addCartItem } = useCart();
+  const { openQuickView } = useUI();
   const [sort, setSort] = useState("recent");
   const [toast, setToast] = useState("");
   const [bulkWorking, setBulkWorking] = useState(false);
+
+  const items = wishlistItems;
 
   // Toast auto-hide
   useEffect(() => {
@@ -322,16 +317,23 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
 
   // ---- Actions
   const remove = (item) => {
-    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    toggleWishlist(item);
     setToast(`${item.name} removed`);
     onRemoveFromWishlist?.(item);
-    // PLACEHOLDER: DELETE /api/wishlist/:id
   };
 
   const moveToBag = (item) => {
+    addCartItem({
+      id: item.id || item.name.toLowerCase().replace(/\s+/g, '-'),
+      name: item.name,
+      price: item.price,
+      spec: item.spec,
+      image: item.img,
+      img: item.img,
+      qty: 1,
+    });
     onAddToCart?.(item);
     setToast(`${item.name} moved to bag`);
-    // PLACEHOLDER: POST /api/cart  +  DELETE /api/wishlist/:id
   };
 
   const moveAll = () => {
@@ -341,18 +343,26 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
       return;
     }
     setBulkWorking(true);
-    available.forEach((i) => onAddToCart?.(i));
-    setItems((prev) => prev.filter((i) => !i.inStock));
+    available.forEach((i) => {
+      addCartItem({
+        id: i.id || i.name.toLowerCase().replace(/\s+/g, '-'),
+        name: i.name,
+        price: i.price,
+        spec: i.spec,
+        image: i.img,
+        img: i.img,
+        qty: 1,
+      });
+      onAddToCart?.(i);
+    });
     setToast(`${available.length} ${available.length === 1 ? "piece" : "pieces"} moved to bag`);
     setTimeout(() => setBulkWorking(false), 600);
-    // PLACEHOLDER: batch POST /api/cart
   };
 
   const clearAll = () => {
     if (!items.length) return;
-    setItems([]);
+    clearWishlistCtx();
     setToast("Wishlist cleared");
-    // PLACEHOLDER: DELETE /api/wishlist
   };
 
   return (
@@ -393,9 +403,9 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
                   <option key={s.key} value={s.key}>{s.label}</option>
                 ))}
               </select>
-              <button className="wl-btn wl-btn--solid" disabled={bulkWorking}
-                onClick={moveAll}>
-                Move all to bag
+              <button className="wl-btn wl-btn--solid"
+                onClick={() => items.length && openQuickView(items[0])}>
+                Enquire Saved Pieces
               </button>
               <button className="wl-btn wl-btn--text" onClick={clearAll}>
                 Clear
@@ -421,7 +431,7 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
           <div className="wl-grid">
             {sorted.map((item) => (
               <WishlistCard key={item.id} item={item}
-                onRemove={remove} onMove={moveToBag} />
+                onRemove={remove} onEnquire={openQuickView} />
             ))}
           </div>
         )}
@@ -441,7 +451,7 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
             </a>
           </div>
           <div className="wl-rail">
-            {RECOMMENDED.map((p) => <MiniCard key={p.id} p={p} />)}
+            {RECOMMENDED.map((p) => <MiniCard key={p.id} p={p} onEnquire={openQuickView} />)}
           </div>
         </div>
       </section>

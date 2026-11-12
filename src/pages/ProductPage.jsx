@@ -6,6 +6,7 @@
 // → Recently viewed.
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useUI } from "../context/UIContext";
 
 /* ===========================================================================
    1. PAGE CSS (subset of brand tokens — safe to remove if global)
@@ -405,9 +406,9 @@ function Accordion({ title, children, defaultOpen = false }) {
 /* ===========================================================================
    6. PRODUCT CARD (for related rails)
 =========================================================================== */
-function MiniCard({ p }) {
+function MiniCard({ p, onEnquire }) {
   return (
-    <a className="pd-card" href="#">
+    <div className="pd-card" onClick={() => onEnquire?.(p)} style={{ cursor: "pointer" }}>
       <div className="pd-card__media">
         <img className="pd-card__img--main" src={p.img} alt={p.name} loading="lazy" />
         <img className="pd-card__img--hover" src={p.hover} alt="" aria-hidden="true" loading="lazy" />
@@ -417,7 +418,7 @@ function MiniCard({ p }) {
         <div className="pd-card__spec">{p.spec}</div>
         <div className="pd-card__price">{INR(p.price)}</div>
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -425,6 +426,7 @@ function MiniCard({ p }) {
    7. PAGE
 =========================================================================== */
 export default function ProductPage({ onAddToCart, onWishlist }) {
+  const { openQuickView } = useUI();
   const [metal, setMetal] = useState(
     PRODUCT.metalOptions.find((m) => m.available)?.key || null
   );
@@ -554,10 +556,18 @@ export default function ProductPage({ onAddToCart, onWishlist }) {
             <p className={`pd-pin__result ${pinResult.ok ? "is-ok" : ""}`}>{pinResult.msg}</p>
           )}
 
-          {/* CTA */}
+          {/* CTA: Replaced Buy now / Add to bag with Enquire Now */}
           <div className="pd-cta">
-            <button className="pd-btn pd-btn--solid" disabled={!canAdd} onClick={handleAdd}>
-              {added ? "Added ✓" : canAdd ? "Add to bag" : "Select size"}
+            <button
+              className="pd-btn pd-btn--solid"
+              type="button"
+              onClick={() => openQuickView({
+                ...PRODUCT,
+                metal: metalObj?.label || metal,
+                size: size ? `Size ${size}` : undefined,
+              })}
+            >
+              Enquire Now ✦
             </button>
             <button className={`pd-btn pd-btn--icon ${saved ? "is-saved" : ""}`}
               aria-pressed={saved} aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
@@ -598,7 +608,7 @@ export default function ProductPage({ onAddToCart, onWishlist }) {
             </a>
           </div>
           <div className="pd-rail">
-            {COMPLETE_LOOK.map((p) => <MiniCard key={p.id} p={p} />)}
+            {COMPLETE_LOOK.map((p) => <MiniCard key={p.id} p={p} onEnquire={openQuickView} />)}
           </div>
         </div>
       </section>
@@ -606,14 +616,14 @@ export default function ProductPage({ onAddToCart, onWishlist }) {
       {/* ---------- RECENTLY VIEWED ---------- */}
       <section className="pd-wrap" style={{ paddingBlock: "clamp(56px,8vw,96px)" }}
         aria-labelledby="pdp-recent">
-        <div className="pd-related__head">
+      <div className="pd-related__head">
           <div>
             <span className="pd-eyebrow">Just for you</span>
             <h2 id="pdp-recent" className="pd-related__title">Recently viewed</h2>
           </div>
         </div>
         <div className="pd-rail">
-          {RECENTLY_VIEWED.map((p) => <MiniCard key={p.id} p={p} />)}
+          {RECENTLY_VIEWED.map((p) => <MiniCard key={p.id} p={p} onEnquire={openQuickView} />)}
         </div>
       </section>
     </main>

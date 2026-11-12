@@ -1,15 +1,68 @@
-import React, { createContext, useContext, useReducer, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
 
 const WishlistContext = createContext(null);
 
-const initialState = { items: [] };
+const INITIAL_WISHLIST = [
+  {
+    id: "r1",
+    name: "The Aurelia Ring",
+    cat: "Rings",
+    spec: "18K Gold · 0.42 ct",
+    price: 64000,
+    inStock: true,
+    img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "r2",
+    name: "Ruby Halo",
+    cat: "Rings",
+    spec: "Rose Gold · Ruby",
+    price: 132000,
+    inStock: true,
+    lowStock: true,
+    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+  },
+  {
+    id: "e2",
+    name: "Petal Studs",
+    cat: "Earrings",
+    spec: "Rose Gold",
+    price: 32000,
+    inStock: true,
+    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
+    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+  },
+];
+
+const STORAGE_KEY = 'cbg_wishlist_items_v1';
+
+function getInitialItems() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (err) {
+    // ignore
+  }
+  return INITIAL_WISHLIST;
+}
+
+const initialState = { items: getInitialItems() };
 
 function wishlistReducer(state, action) {
   switch (action.type) {
     case 'ADD':
       return { items: [...state.items, action.product] };
     case 'REMOVE':
-      return { items: state.items.filter((i) => i.id !== action.id) };
+      return {
+        items: state.items.filter(
+          (i) => i.id !== action.id && i.name !== action.id
+        ),
+      };
     case 'CLEAR':
       return { items: [] };
     default:
@@ -20,18 +73,43 @@ function wishlistReducer(state, action) {
 export function WishlistProvider({ children }) {
   const [state, dispatch] = useReducer(wishlistReducer, initialState);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch (err) {
+      // ignore
+    }
+  }, [state.items]);
+
   const toggleWishlist = (product) => {
-    const exists = state.items.some((i) => i.id === product.id);
-    dispatch(exists ? { type: 'REMOVE', id: product.id } : { type: 'ADD', product });
+    const key = product.id || product.name;
+    const exists = state.items.some(
+      (i) => i.id === key || i.name === key || (product.name && i.name === product.name)
+    );
+    if (exists) {
+      dispatch({ type: 'REMOVE', id: key });
+    } else {
+      dispatch({
+        type: 'ADD',
+        product: {
+          ...product,
+          id: product.id || product.name.toLowerCase().replace(/\s+/g, '-'),
+        },
+      });
+    }
   };
 
-  const isWishlisted = (id) => state.items.some((i) => i.id === id);
+  const isWishlisted = (idOrName) => {
+    if (!idOrName) return false;
+    return state.items.some(
+      (i) => i.id === idOrName || i.name === idOrName
+    );
+  };
 
   const clearWishlist = () => dispatch({ type: 'CLEAR' });
 
   const value = useMemo(
     () => ({ items: state.items, toggleWishlist, isWishlisted, clearWishlist }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.items]
   );
 

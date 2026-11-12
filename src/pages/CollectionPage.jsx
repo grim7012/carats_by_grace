@@ -5,7 +5,8 @@
 // Sections: Hero banner → Sticky filter bar (category, price, metal, occasion)
 //           → Sort dropdown → 4-col grid (3 tablet, 2 mobile) → Load more.
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
+import { useUI } from "../context/UIContext";
 
 /* ===========================================================================
    1. SHARED TOKENS (subset — full set lives in global.css)
@@ -324,7 +325,7 @@ function FilterDropdown({ label, open, onToggle, onClose, children, activeCount 
 /* ===========================================================================
    5. PRODUCT CARD
 =========================================================================== */
-function ProductCard({ p, index, saved, onToggleSave, onAdd }) {
+function ProductCard({ p, index, saved, onToggleSave, onEnquire }) {
   return (
     <article className="cp-card" style={{ animationDelay: `${(index % 8) * 40}ms` }}>
       <div className="cp-card__media">
@@ -336,14 +337,17 @@ function ProductCard({ p, index, saved, onToggleSave, onAdd }) {
           className={`cp-card__wish ${saved ? "is-saved" : ""}`}
           aria-pressed={saved}
           aria-label={saved ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
-          onClick={() => onToggleSave(p.id)}>
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSave(p.id);
+          }}>
           <Icon name="heart" size={16} />
         </button>
-        <button className="cp-card__add" onClick={() => onAdd(p)}>
-          Add <span aria-hidden="true">+</span>
+        <button className="cp-card__add" type="button" onClick={() => onEnquire(p)}>
+          Enquire <span aria-hidden="true">✦</span>
         </button>
       </div>
-      <div className="cp-card__body">
+      <div className="cp-card__body" onClick={() => onEnquire(p)} style={{ cursor: "pointer" }}>
         <h3 className="cp-card__name">{p.name}</h3>
         <span className="cp-card__spec">{p.spec}</span>
         <div className="cp-card__row">
@@ -413,12 +417,8 @@ export default function CollectionPage() {
     setCategories([]); setMetals([]); setOccasions([]); setPriceBand(null);
   };
 
+  const { openQuickView } = useUI();
   const onToggleSave = (id) => setSaved((s) => ({ ...s, [id]: !s[id] }));
-  const onAdd = (p) => {
-    // TODO: dispatch to cart context / POST /api/cart
-    // eslint-disable-next-line no-console
-    console.log("Add to cart:", p.id);
-  };
 
   // close any open dropdown when another opens
   const toggleMenu = (key) => setOpenMenu(openMenu === key ? null : key);
@@ -567,7 +567,7 @@ export default function CollectionPage() {
               <ProductCard key={p.id} p={p} index={i}
                 saved={!!saved[p.id]}
                 onToggleSave={onToggleSave}
-                onAdd={onAdd} />
+                onEnquire={openQuickView} />
             ))}
           </div>
         )}
