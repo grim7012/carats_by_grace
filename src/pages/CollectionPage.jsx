@@ -6,8 +6,9 @@
 //           → Sort dropdown → 4-col grid (3 tablet, 2 mobile) → Load more.
 
 import React, { useMemo, useRef, useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useUI } from "../context/UIContext";
-import { getJewelryPhoto, getJewelryHover, necklace1 } from "../data/photos";
+import { getJewelryPhoto, getJewelryHover, necklace1, necklace2, necklace3 } from "../data/photos";
 
 /* ===========================================================================
    1. SHARED TOKENS (subset — full set lives in global.css)
@@ -219,61 +220,215 @@ const PRICE_BANDS = [
   { key: "gt100", label: "Above ₹1L", min: 100000, max: Infinity },
 ];
 
+export const COLLECTION_META = {
+  rings: {
+    title: "Rings, considered.",
+    crumb: "Home · Collections · Rings",
+    lede: "Everyday fine and once-in-a-lifetime. Quietly luminous pieces, made to be worn.",
+    category: "Rings",
+    heroImg: necklace1,
+  },
+  earrings: {
+    title: "Earrings, framed in grace.",
+    crumb: "Home · Collections · Earrings",
+    lede: "Luminous studs, sculpted drops, and cascading chandeliers crafted to catch every flicker of light.",
+    category: "Earrings",
+    heroImg: necklace2,
+  },
+  necklaces: {
+    title: "Necklaces, sculpted in light.",
+    crumb: "Home · Collections · Necklaces",
+    lede: "From whisper-fine chains to statement collar pieces, designed to rest effortlessly against the collarbone.",
+    category: "Necklaces",
+    heroImg: necklace3,
+  },
+  bracelets: {
+    title: "Bracelets & Cuffs.",
+    crumb: "Home · Collections · Bracelets",
+    lede: "Fluid chains, structured cuffs, and timeless silhouettes crafted to move with you.",
+    category: "Bracelets",
+    heroImg: necklace1,
+  },
+  bangles: {
+    title: "Bangles & Kadas.",
+    crumb: "Home · Collections · Bangles",
+    lede: "Traditional grandeur meets contemporary minimalism. Stacked or worn solo in 22K and 18K gold.",
+    category: "Bangles",
+    heroImg: necklace2,
+  },
+  pendants: {
+    title: "Pendants & Talismans.",
+    crumb: "Home · Collections · Pendants",
+    lede: "Delicate solitaires and celestial motifs on refined gold chains. Intimate pieces made for every day.",
+    category: "Pendants",
+    heroImg: necklace3,
+  },
+  bridal: {
+    title: "For the vows. And every day after.",
+    crumb: "Home · Collections · The Bridal Edit",
+    lede: "Handcrafted ceremonial suites, solitaire sets, and heirloom gold designed for your milestone celebration.",
+    occasion: "Bridal",
+    heroImg: necklace1,
+  },
+  gifting: {
+    title: "Curated Gifts of Fine Gold.",
+    crumb: "Home · Collections · Gifting",
+    lede: "Tokens of love, anniversary milestones, and cherished treasures thoughtfully packaged in our signature box.",
+    occasion: "Gifting",
+    heroImg: necklace2,
+  },
+  "high-jewellery": {
+    title: "High Jewellery & Rare Gems.",
+    crumb: "Home · Collections · High Jewellery",
+    lede: "Bespoke masterworks, rare diamond settings, and exceptional atelier craftsmanship for the connoisseur.",
+    priceBand: "gt100",
+    heroImg: necklace3,
+  },
+  everyday: {
+    title: "Everyday Fine Jewellery.",
+    crumb: "Home · Collections · Everyday",
+    lede: "Lightweight essentials crafted in solid 18K gold. Designed to live in and never take off.",
+    occasion: "Everyday",
+    heroImg: necklace1,
+  },
+  festive: {
+    title: "The Festive & Celebratory Edit.",
+    crumb: "Home · Collections · Festive",
+    lede: "Luminous polki diamonds, rubies, and handcrafted gold to illuminate evenings of celebration.",
+    occasion: "Festive",
+    heroImg: necklace2,
+  },
+  anniversary: {
+    title: "Anniversary Milestones.",
+    crumb: "Home · Collections · Anniversary",
+    lede: "Enduring eternity bands, solitaire pendants, and diamond suites marking precious chapters.",
+    occasion: "Anniversary",
+    heroImg: necklace3,
+  },
+  "under-50k": {
+    title: "Fine Jewellery Under ₹50,000.",
+    crumb: "Home · Collections · Under ₹50K",
+    lede: "Everyday gold rings, minimalist studs, and delicate chains within reachable luxury.",
+    priceBand: "lt50",
+    heroImg: necklace1,
+  },
+  "50k-1l": {
+    title: "Fine Jewellery ₹50,000 – ₹1,00,000.",
+    crumb: "Home · Collections · ₹50K – ₹1L",
+    lede: "Refined diamond pendants, statement hoops, and signature gold bands.",
+    priceBand: "50to100",
+    heroImg: necklace2,
+  },
+  "above-1l": {
+    title: "Fine Jewellery Above ₹1,00,000.",
+    crumb: "Home · Collections · Above ₹1L",
+    lede: "Solitaire rings, diamond necklaces, and bridal heirlooms crafted with master gem settings.",
+    priceBand: "gt100",
+    heroImg: necklace3,
+  },
+  latest: {
+    title: "Latest Arrivals.",
+    crumb: "Home · Collections · Latest Arrivals",
+    lede: "The newest designs from the Carats by Grace atelier, fresh from the workbench.",
+    sort: "newest",
+    heroImg: necklace1,
+  },
+  bestsellers: {
+    title: "Our Most Loved Bestsellers.",
+    crumb: "Home · Collections · Bestsellers",
+    lede: "The signature silhouettes our clients reach for time and time again.",
+    heroImg: necklace2,
+  },
+  all: {
+    title: "The Complete Atelier.",
+    crumb: "Home · Collections · All Jewellery",
+    lede: "Explore our full treasury of handcrafted 18K and 22K fine jewellery.",
+    heroImg: necklace1,
+  },
+};
+
 const BASE_PRODUCTS = [
+  // ── Rings ──
   { id: "r1", name: "The Aurelia Ring", cat: "Rings", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 64000, spec: "18K Gold · 0.42 ct",
-    img: getJewelryPhoto(0),
-    hover: getJewelryHover(0) },
+    img: getJewelryPhoto(0), hover: getJewelryHover(0) },
   { id: "r2", name: "Ruby Halo", cat: "Rings", metal: "Rose Gold", occ: ["Festive", "Anniversary"], price: 132000, spec: "Rose Gold · Ruby",
-    img: getJewelryPhoto(1),
-    hover: getJewelryHover(1) },
+    img: getJewelryPhoto(1), hover: getJewelryHover(1) },
   { id: "r3", name: "Grace Solitaire", cat: "Rings", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 98000, spec: "18K · 0.60 ct",
-    img: getJewelryPhoto(2),
-    hover: getJewelryHover(2) },
+    img: getJewelryPhoto(2), hover: getJewelryHover(2) },
   { id: "r4", name: "Étoile Band", cat: "Rings", metal: "Yellow Gold", occ: ["Everyday"], price: 42000, spec: "18K Gold",
-    img: getJewelryPhoto(3),
-    hover: getJewelryHover(3) },
-  { id: "e1", name: "Drop Lumière", cat: "Earrings", metal: "Yellow Gold", occ: ["Festive"], price: 76000, spec: "18K · 0.30 ct",
-    img: getJewelryPhoto(4),
-    hover: getJewelryHover(4) },
-  { id: "e2", name: "Petal Studs", cat: "Earrings", metal: "Rose Gold", occ: ["Everyday", "Gifting"], price: 32000, spec: "Rose Gold",
-    img: getJewelryPhoto(5),
-    hover: getJewelryHover(5) },
-  { id: "e3", name: "Nightfall Hoops", cat: "Earrings", metal: "White Gold", occ: ["Festive", "Anniversary"], price: 118000, spec: "18K · Diamonds",
-    img: getJewelryPhoto(6),
-    hover: getJewelryHover(6) },
-  { id: "e4", name: "Dewdrop Mini", cat: "Earrings", metal: "Yellow Gold", occ: ["Everyday"], price: 28000, spec: "18K Gold",
-    img: getJewelryPhoto(7),
-    hover: getJewelryHover(7) },
-  { id: "n1", name: "Lumen Pendant", cat: "Necklaces", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 54000, spec: "18K · 0.25 ct",
-    img: getJewelryPhoto(8),
-    hover: getJewelryHover(8) },
-  { id: "n2", name: "Sculpt Chain", cat: "Necklaces", metal: "Rose Gold", occ: ["Everyday"], price: 47000, spec: "Rose Gold",
-    img: getJewelryPhoto(9),
-    hover: getJewelryHover(9) },
-  { id: "n3", name: "Étoile Necklace", cat: "Necklaces", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 156000, spec: "18K · Diamonds",
-    img: getJewelryPhoto(10),
-    hover: getJewelryHover(10) },
-  { id: "n4", name: "Grace Lariat", cat: "Necklaces", metal: "Yellow Gold", occ: ["Festive"], price: 88000, spec: "18K Gold",
-    img: getJewelryPhoto(11),
-    hover: getJewelryHover(11) },
-  { id: "b1", name: "Slip Bracelet", cat: "Bracelets", metal: "Yellow Gold", occ: ["Everyday"], price: 58000, spec: "18K Gold",
-    img: getJewelryPhoto(12),
-    hover: getJewelryHover(12) },
-  { id: "b2", name: "Halo Bangle", cat: "Bangles", metal: "Rose Gold", occ: ["Bridal", "Festive"], price: 122000, spec: "Rose Gold · Diamonds",
-    img: getJewelryPhoto(13),
-    hover: getJewelryHover(13) },
-  { id: "p1", name: "Sol Pendant", cat: "Pendants", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 44000, spec: "18K · 0.18 ct",
-    img: getJewelryPhoto(14),
-    hover: getJewelryHover(14) },
-  { id: "p2", name: "Teardrop Pendant", cat: "Pendants", metal: "White Gold", occ: ["Bridal"], price: 96000, spec: "18K · 0.4 ct",
-    img: getJewelryPhoto(15),
-    hover: getJewelryHover(15) },
+    img: getJewelryPhoto(3), hover: getJewelryHover(3) },
   { id: "r5", name: "Vow Ring", cat: "Rings", metal: "Platinum", occ: ["Bridal"], price: 168000, spec: "Platinum · 0.7 ct",
-    img: getJewelryPhoto(16),
-    hover: getJewelryHover(16) },
+    img: getJewelryPhoto(4), hover: getJewelryHover(4) },
+  { id: "r6", name: "Sovereign Signet Band", cat: "Rings", metal: "Yellow Gold", occ: ["Everyday", "Anniversary"], price: 74000, spec: "18K Yellow Gold · Brushed Finish",
+    img: getJewelryPhoto(5), hover: getJewelryHover(5) },
+
+  // ── Earrings ──
+  { id: "e1", name: "Drop Lumière", cat: "Earrings", metal: "Yellow Gold", occ: ["Festive"], price: 76000, spec: "18K · 0.30 ct",
+    img: getJewelryPhoto(6), hover: getJewelryHover(6) },
+  { id: "e2", name: "Petal Studs", cat: "Earrings", metal: "Rose Gold", occ: ["Everyday", "Gifting"], price: 32000, spec: "Rose Gold",
+    img: getJewelryPhoto(7), hover: getJewelryHover(7) },
+  { id: "e3", name: "Nightfall Hoops", cat: "Earrings", metal: "White Gold", occ: ["Festive", "Anniversary"], price: 118000, spec: "18K · Diamonds",
+    img: getJewelryPhoto(8), hover: getJewelryHover(8) },
+  { id: "e4", name: "Dewdrop Mini", cat: "Earrings", metal: "Yellow Gold", occ: ["Everyday"], price: 28000, spec: "18K Gold",
+    img: getJewelryPhoto(9), hover: getJewelryHover(9) },
   { id: "e5", name: "Cascade Drops", cat: "Earrings", metal: "Yellow Gold", occ: ["Festive", "Anniversary"], price: 104000, spec: "18K · 0.5 ct",
-    img: getJewelryPhoto(17),
-    hover: getJewelryHover(17) },
+    img: getJewelryPhoto(10), hover: getJewelryHover(10) },
+  { id: "e6", name: "Solitaire Diamond Huggies", cat: "Earrings", metal: "White Gold", occ: ["Everyday", "Bridal"], price: 58000, spec: "18K White Gold · 0.40 ct",
+    img: getJewelryPhoto(11), hover: getJewelryHover(11) },
+
+  // ── Necklaces ──
+  { id: "n1", name: "Lumen Pendant", cat: "Necklaces", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 54000, spec: "18K · 0.25 ct",
+    img: getJewelryPhoto(12), hover: getJewelryHover(12) },
+  { id: "n2", name: "Sculpt Chain", cat: "Necklaces", metal: "Rose Gold", occ: ["Everyday"], price: 47000, spec: "Rose Gold",
+    img: getJewelryPhoto(13), hover: getJewelryHover(13) },
+  { id: "n3", name: "Étoile Necklace", cat: "Necklaces", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 156000, spec: "18K · Diamonds",
+    img: getJewelryPhoto(14), hover: getJewelryHover(14) },
+  { id: "n4", name: "Grace Lariat", cat: "Necklaces", metal: "Yellow Gold", occ: ["Festive"], price: 88000, spec: "18K Gold",
+    img: getJewelryPhoto(15), hover: getJewelryHover(15) },
+  { id: "n5", name: "Nocturne Solitaire Choker", cat: "Necklaces", metal: "Yellow Gold", occ: ["Festive", "Bridal"], price: 112000, spec: "18K Gold · 0.50 ct",
+    img: getJewelryPhoto(16), hover: getJewelryHover(16) },
+  { id: "n6", name: "Riviera Diamond Tennis Necklace", cat: "Necklaces", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 240000, spec: "18K White Gold · 2.50 ct",
+    img: getJewelryPhoto(17), hover: getJewelryHover(17) },
+  { id: "n7", name: "Royal Heritage Emerald Collar", cat: "Necklaces", metal: "Rose Gold", occ: ["Festive", "Bridal"], price: 195000, spec: "18K Rose Gold · Natural Emerald",
+    img: getJewelryPhoto(18), hover: getJewelryHover(18) },
+  { id: "n8", name: "Cascade Drop Necklace", cat: "Necklaces", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 78000, spec: "18K Gold · Diamond Accents",
+    img: getJewelryPhoto(19), hover: getJewelryHover(19) },
+
+  // ── Bracelets ──
+  { id: "b1", name: "Slip Bracelet", cat: "Bracelets", metal: "Yellow Gold", occ: ["Everyday"], price: 58000, spec: "18K Gold",
+    img: getJewelryPhoto(20), hover: getJewelryHover(20) },
+  { id: "b3", name: "Riviera Tennis Bracelet", cat: "Bracelets", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 135000, spec: "18K White Gold · 1.2 ct Diamonds",
+    img: getJewelryPhoto(21), hover: getJewelryHover(21) },
+  { id: "b4", name: "Gilded Paperclip Chain", cat: "Bracelets", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 52000, spec: "18K Yellow Gold · Solid Links",
+    img: getJewelryPhoto(22), hover: getJewelryHover(22) },
+  { id: "b5", name: "Celestial Charm Bracelet", cat: "Bracelets", metal: "Rose Gold", occ: ["Gifting", "Festive"], price: 68000, spec: "18K Rose Gold · Star Motifs",
+    img: getJewelryPhoto(23), hover: getJewelryHover(23) },
+  { id: "b6", name: "Atelier Open Cuff", cat: "Bracelets", metal: "Yellow Gold", occ: ["Everyday", "Festive"], price: 84000, spec: "18K Yellow Gold · Sculpted Wire",
+    img: getJewelryPhoto(24), hover: getJewelryHover(24) },
+
+  // ── Bangles ──
+  { id: "b2", name: "Halo Bangle", cat: "Bangles", metal: "Rose Gold", occ: ["Bridal", "Festive"], price: 122000, spec: "Rose Gold · Diamonds",
+    img: getJewelryPhoto(25), hover: getJewelryHover(25) },
+  { id: "bg1", name: "Maya Filigree Kada", cat: "Bangles", metal: "Yellow Gold", occ: ["Bridal", "Festive"], price: 142000, spec: "22K Gold · Handcrafted Filigree",
+    img: getJewelryPhoto(26), hover: getJewelryHover(26) },
+  { id: "bg2", name: "Classic Polished Bangle Set", cat: "Bangles", metal: "Rose Gold", occ: ["Everyday", "Anniversary"], price: 89000, spec: "18K Rose Gold · Set of 2",
+    img: getJewelryPhoto(27), hover: getJewelryHover(27) },
+  { id: "bg3", name: "Sovereign Meenakari Kada", cat: "Bangles", metal: "Yellow Gold", occ: ["Festive", "Bridal"], price: 168000, spec: "22K Gold · Enamel Detailing",
+    img: getJewelryPhoto(28), hover: getJewelryHover(28) },
+  { id: "bg4", name: "Twin Pearl Open Bangle", cat: "Bangles", metal: "White Gold", occ: ["Everyday", "Gifting"], price: 76000, spec: "18K White Gold · South Sea Pearls",
+    img: getJewelryPhoto(29), hover: getJewelryHover(29) },
+
+  // ── Pendants ──
+  { id: "p1", name: "Sol Pendant", cat: "Pendants", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 44000, spec: "18K · 0.18 ct",
+    img: getJewelryPhoto(30), hover: getJewelryHover(30) },
+  { id: "p2", name: "Teardrop Pendant", cat: "Pendants", metal: "White Gold", occ: ["Bridal"], price: 96000, spec: "18K · 0.4 ct",
+    img: getJewelryPhoto(31), hover: getJewelryHover(31) },
+  { id: "p3", name: "Crescent Diamond Talisman", cat: "Pendants", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 52000, spec: "18K Gold · 0.22 ct",
+    img: getJewelryPhoto(32), hover: getJewelryHover(32) },
+  { id: "p4", name: "Royal Ruby Medallion", cat: "Pendants", metal: "Rose Gold", occ: ["Festive", "Anniversary"], price: 86000, spec: "18K Rose Gold · Natural Ruby",
+    img: getJewelryPhoto(33), hover: getJewelryHover(33) },
+  { id: "p5", name: "Flora Solitaire Pendant", cat: "Pendants", metal: "White Gold", occ: ["Everyday", "Bridal"], price: 64000, spec: "18K White Gold · 0.35 ct",
+    img: getJewelryPhoto(34), hover: getJewelryHover(34) },
 ];
 
 const SORT_OPTIONS = [
@@ -364,15 +519,72 @@ function ProductCard({ p, index, saved, onToggleSave, onEnquire }) {
    6. PAGE
 =========================================================================== */
 export default function CollectionPage() {
+  const { slug } = useParams();
+  const cleanSlug = (slug || "all").toLowerCase();
+
+  const defaultMeta = {
+    title: "The Complete Atelier.",
+    crumb: "All Jewellery",
+    lede: "Explore our full treasury of handcrafted 18K and 22K fine jewellery.",
+    heroImg: necklace1,
+  };
+  const currentMeta = COLLECTION_META[cleanSlug] || defaultMeta;
+
   // ---- filter state
-  const [categories, setCategories] = useState([]); // array of cat names
+  const [categories, setCategories] = useState(() => {
+    const meta = COLLECTION_META[cleanSlug];
+    return meta?.category ? [meta.category] : [];
+  });
   const [metals, setMetals] = useState([]);
-  const [occasions, setOccasions] = useState([]);
-  const [priceBand, setPriceBand] = useState(null); // key or null
-  const [sort, setSort] = useState("featured");
+  const [occasions, setOccasions] = useState(() => {
+    const meta = COLLECTION_META[cleanSlug];
+    return meta?.occasion ? [meta.occasion] : [];
+  });
+  const [priceBand, setPriceBand] = useState(() => {
+    const meta = COLLECTION_META[cleanSlug];
+    return meta?.priceBand || null;
+  });
+  const [sort, setSort] = useState(() => {
+    const meta = COLLECTION_META[cleanSlug];
+    return meta?.sort || "featured";
+  });
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [saved, setSaved] = useState({});
   const [openMenu, setOpenMenu] = useState(null); // 'category' | 'price' | 'metal' | 'occasion' | null
+
+  // Sync state whenever the URL slug changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const targetMeta = COLLECTION_META[cleanSlug];
+    if (targetMeta) {
+      if (targetMeta.category) {
+        setCategories([targetMeta.category]);
+        setOccasions([]);
+        setPriceBand(null);
+      } else if (targetMeta.occasion) {
+        setCategories([]);
+        setOccasions([targetMeta.occasion]);
+        setPriceBand(null);
+      } else if (targetMeta.priceBand) {
+        setCategories([]);
+        setOccasions([]);
+        setPriceBand(targetMeta.priceBand);
+      } else {
+        setCategories([]);
+        setOccasions([]);
+        setPriceBand(null);
+      }
+      if (targetMeta.sort) {
+        setSort(targetMeta.sort);
+      } else {
+        setSort("featured");
+      }
+    } else {
+      setCategories([]);
+      setOccasions([]);
+      setPriceBand(null);
+    }
+  }, [cleanSlug]);
 
   // reset pagination whenever filters/sort change
   useEffect(() => { setVisible(PAGE_SIZE); }, [categories, metals, occasions, priceBand, sort]);
@@ -432,18 +644,21 @@ export default function CollectionPage() {
       <section className="cp-hero" aria-label="Collection banner">
         <div className="cp-hero__img">
           <img
-            src={necklace1}
-            alt="Editorial: Carats by Grace fine jewelry"
+            src={currentMeta.heroImg || necklace1}
+            alt={`Editorial: Carats by Grace fine jewelry — ${currentMeta.title}`}
             fetchpriority="high"
           />
         </div>
         <div className="cp-hero__copy">
-          <span className="cp-hero__crumb">Home · Collections · Rings</span>
-          <h1 className="cp-hero__title">Rings, considered.</h1>
-          <p className="cp-hero__lede">
-            Everyday fine and once-in-a-lifetime. Quietly luminous pieces,
-            made to be worn.
-          </p>
+          <span className="cp-hero__crumb">
+            <Link to="/" style={{ color: "inherit", opacity: 0.85 }}>Home</Link>
+            {" · "}
+            <Link to="/collections/all" style={{ color: "inherit", opacity: 0.85 }}>Collections</Link>
+            {" · "}
+            <span>{currentMeta.crumb ? currentMeta.crumb.replace(/^Home · Collections · /i, "") : (currentMeta.category || currentMeta.title)}</span>
+          </span>
+          <h1 className="cp-hero__title">{currentMeta.title}</h1>
+          <p className="cp-hero__lede">{currentMeta.lede}</p>
         </div>
       </section>
 

@@ -1001,17 +1001,17 @@ function Categories() {
             Find your everyday signature.
           </h2>
         </div>
-        <a className="cg-btn cg-btn--ghost" href="#">View all</a>
+        <Link className="cg-btn cg-btn--ghost" to="/collections/all">View all</Link>
       </div>
       <div className="cg-cat__grid">
         {CATEGORIES.map((c, i) => (
-          <a key={c.name} href="#"
+          <Link key={c.name} to={`/collections/${c.name.toLowerCase()}`}
             className={`cg-tile ${c.cls} reveal`}
             style={{ transitionDelay: `${i * 60}ms` }}>
             <img src={c.img} alt={`${c.name} — Carats by Grace`} loading="lazy" />
             <span className="cg-tile__label">{c.name}</span>
             <span className="cg-tile__shop">Shop Now →</span>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
@@ -1035,10 +1035,10 @@ function CampaignSplit() {
             Our festive edit pairs a single ruby with warm gold — designed
             for evenings that ask for nothing more.
           </p>
-          <a className="cg-btn cg-btn--solid" href="#"
+          <Link className="cg-btn cg-btn--solid" to="/collections/festive"
             style={{ alignSelf: "flex-start" }}>
             Explore the Edit
-          </a>
+          </Link>
         </div>
       </div>
     </section>
@@ -1161,12 +1161,12 @@ function Limited() {
       </div>
       <div className="cg-limited__grid">
         {LIMITED.map((c, i) => (
-          <a className="cg-limited__card reveal" key={c.name} href="#"
+          <Link className="cg-limited__card reveal" key={c.name} to="/collections/all"
             style={{ transitionDelay: `${i * 50}ms` }}>
             <img src={c.img} alt={`${c.name} — limited edition`} loading="lazy" />
             <span className="cg-limited__tag">Limited Edition</span>
             <span className="cg-limited__name">{c.name}</span>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
@@ -1280,10 +1280,10 @@ function Bridal() {
               Bridal rings and sets, considered in proportion and made to be
               worn far beyond the day itself.
             </p>
-            <a className="cg-btn cg-btn--solid" href="#"
+            <Link className="cg-btn cg-btn--solid" to="/collections/bridal"
               style={{ alignSelf: "flex-start" }}>
               Discover Bridal
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -1307,16 +1307,17 @@ function Gifting() {
           <span className="cg-eyebrow">By occasion</span>
           <div className="cg-chips">
             {occasion.map((o) => (
-              <a className="cg-chip" href="#" key={o}>{o}</a>
+              <Link className="cg-chip" to="/collections/gifting" key={o}>{o}</Link>
             ))}
           </div>
         </div>
         <div style={{ marginTop: 20 }}>
           <span className="cg-eyebrow">By budget</span>
           <div className="cg-chips">
-            {budget.map((b) => (
-              <a className="cg-chip" href="#" key={b}>{b}</a>
-            ))}
+            {budget.map((b) => {
+              const bSlug = b === "Under ₹50K" ? "under-50k" : b === "₹50K – ₹1L" ? "50k-1l" : "above-1l";
+              return <Link className="cg-chip" to={`/collections/${bSlug}`} key={b}>{b}</Link>;
+            })}
           </div>
         </div>
       </div>

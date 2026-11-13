@@ -6,6 +6,7 @@
 // → Recently viewed.
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import {
   necklace1,
@@ -478,9 +479,9 @@ export default function ProductPage({ onAddToCart, onWishlist }) {
 
       {/* Breadcrumb */}
       <div className="pd-wrap pd-crumb">
-        <a href="/">Home</a><span>/</span>
-        <a href="/collections">Collections</a><span>/</span>
-        <a href="/collections/rings">Rings</a><span>/</span>
+        <Link to="/">Home</Link><span>/</span>
+        <Link to="/collections/all">Collections</Link><span>/</span>
+        <Link to="/collections/rings">Rings</Link><span>/</span>
         <span style={{ color: "var(--ink)" }}>{PRODUCT.name}</span>
       </div>
 
@@ -610,9 +611,9 @@ export default function ProductPage({ onAddToCart, onWishlist }) {
               <span className="pd-eyebrow">Styled together</span>
               <h2 id="pdp-look" className="pd-related__title">Complete the look</h2>
             </div>
-            <a href="/collections" className="pd-btn pd-btn--ghost" style={{ minHeight: 44 }}>
+            <Link to="/collections/all" className="pd-btn pd-btn--ghost" style={{ minHeight: 44 }}>
               Explore All
-            </a>
+            </Link>
           </div>
           <div className="pd-rail">
             {COMPLETE_LOOK.map((p) => <MiniCard key={p.id} p={p} onEnquire={openQuickView} />)}

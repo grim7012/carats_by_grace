@@ -11,3 +11,4 @@ export const JEWELRY_PHOTOS = [necklace1, necklace2, necklace3];
 
 export const getJewelryPhoto = (index) => JEWELRY_PHOTOS[Math.abs(index) % JEWELRY_PHOTOS.length];
 export const getJewelryHover = (index) => JEWELRY_PHOTOS[(Math.abs(index) + 1) % JEWELRY_PHOTOS.length];
+

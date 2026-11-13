@@ -5,6 +5,7 @@
 // items with "Move to bag" & "Remove" → Empty state → Recommended rail.
 
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useUI } from "../context/UIContext";
@@ -381,9 +382,9 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
                 The pieces you return to. Kept safe here so nothing slips.
               </p>
             </div>
-            <a className="wl-btn wl-btn--ghost" href="/collections">
+            <Link className="wl-btn wl-btn--ghost" to="/collections/all">
               Continue shopping
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -423,10 +424,10 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
             <div className="wl-empty__spark" aria-hidden="true">✦ ✦ ✦</div>
             <h3>Nothing saved, yet.</h3>
             <p>When you find something worth returning to, it lives here.</p>
-            <a className="wl-btn wl-btn--solid" href="/collections"
+            <Link className="wl-btn wl-btn--solid" to="/collections/all"
               style={{ display: "inline-flex" }}>
               Explore collections
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="wl-grid">
@@ -446,10 +447,10 @@ export default function WishlistPage({ onAddToCart, onRemoveFromWishlist }) {
               <span className="wl-eyebrow">You may also like</span>
               <h2 id="wl-rec" className="wl-related__title">A few we love for you</h2>
             </div>
-            <a className="wl-btn wl-btn--ghost" href="/collections"
+            <Link className="wl-btn wl-btn--ghost" to="/collections/all"
               style={{ minHeight: 44 }}>
               Explore All
-            </a>
+            </Link>
           </div>
           <div className="wl-rail">
             {RECOMMENDED.map((p) => <MiniCard key={p.id} p={p} onEnquire={openQuickView} />)}

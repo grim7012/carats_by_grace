@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { UIProvider, useUI } from './context/UIContext';
@@ -69,13 +69,24 @@ function AppRoutes() {
     <>
       {!isHome && <Header />}
       <Routes>
-        <Route path="/"                   element={<HomePage />} />
-        <Route path="/collections"        element={<CollectionPage />} />
-        <Route path="/collections/:slug"  element={<CollectionPage />} />
-        <Route path="/products/:slug"     element={<ProductPage />} />
-        <Route path="/product/:slug"      element={<ProductPage />} />
-        <Route path="/wishlist"           element={<WishlistPage />} />
-        <Route path="/account"            element={<WishlistPage />} />
+        <Route path="/"                           element={<HomePage />} />
+        <Route path="/collections"                element={<CollectionPage />} />
+        <Route path="/collections/:slug"          element={<CollectionPage />} />
+        <Route path="/collections/:slug/:subslug" element={<CollectionPage />} />
+        <Route path="/products/:slug"             element={<ProductPage />} />
+        <Route path="/product/:slug"              element={<ProductPage />} />
+        <Route path="/wishlist"                   element={<WishlistPage />} />
+        <Route path="/account"                    element={<WishlistPage />} />
+        {/* Direct category shortcuts */}
+        <Route path="/rings"                      element={<Navigate to="/collections/rings" replace />} />
+        <Route path="/earrings"                   element={<Navigate to="/collections/earrings" replace />} />
+        <Route path="/necklaces"                  element={<Navigate to="/collections/necklaces" replace />} />
+        <Route path="/bracelets"                  element={<Navigate to="/collections/bracelets" replace />} />
+        <Route path="/bangles"                    element={<Navigate to="/collections/bangles" replace />} />
+        <Route path="/pendants"                   element={<Navigate to="/collections/pendants" replace />} />
+        <Route path="/bridal"                     element={<Navigate to="/collections/bridal" replace />} />
+        <Route path="/gifting"                    element={<Navigate to="/collections/gifting" replace />} />
+        <Route path="/high-jewellery"             element={<Navigate to="/collections/high-jewellery" replace />} />
       </Routes>
       {!isHome && <Footer />}
     </>
