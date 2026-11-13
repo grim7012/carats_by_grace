@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
+import { getJewelryPhoto, getJewelryHover } from '../data/photos';
 
 const WishlistContext = createContext(null);
 
@@ -10,8 +11,8 @@ const INITIAL_WISHLIST = [
     spec: "18K Gold · 0.42 ct",
     price: 64000,
     inStock: true,
-    img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(0),
+    hover: getJewelryHover(0),
   },
   {
     id: "r2",
@@ -21,8 +22,8 @@ const INITIAL_WISHLIST = [
     price: 132000,
     inStock: true,
     lowStock: true,
-    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(1),
+    hover: getJewelryHover(1),
   },
   {
     id: "e2",
@@ -31,12 +32,12 @@ const INITIAL_WISHLIST = [
     spec: "Rose Gold",
     price: 32000,
     inStock: true,
-    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(2),
+    hover: getJewelryHover(2),
   },
 ];
 
-const STORAGE_KEY = 'cbg_wishlist_items_v1';
+const STORAGE_KEY = 'cbg_wishlist_items_v2';
 
 function getInitialItems() {
   try {

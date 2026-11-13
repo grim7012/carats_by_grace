@@ -10,6 +10,13 @@ import heroVideo from "../components/video/1794410894431085.mp4";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useUI } from "../context/UIContext";
+import {
+  necklace1,
+  necklace2,
+  necklace3,
+  getJewelryPhoto,
+  getJewelryHover,
+} from "../data/photos";
 
 /* ===========================================================================
    DESIGN TOKENS + GLOBAL STYLES
@@ -521,41 +528,41 @@ const IMG = {
 };
 
 const CATEGORIES = [
-  { name: "Rings", img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80", cls: "cg-tile--tall" },
-  { name: "Earrings", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80", cls: "" },
-  { name: "Necklaces", img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=800&q=80", cls: "cg-tile--wide" },
-  { name: "Bracelets", img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=800&q=80", cls: "" },
-  { name: "Bangles", img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=800&q=80", cls: "" },
-  { name: "Pendants", img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80", cls: "" },
+  { name: "Rings", img: getJewelryPhoto(0), cls: "cg-tile--tall" },
+  { name: "Earrings", img: getJewelryPhoto(1), cls: "" },
+  { name: "Necklaces", img: getJewelryPhoto(2), cls: "cg-tile--wide" },
+  { name: "Bracelets", img: getJewelryPhoto(3), cls: "" },
+  { name: "Bangles", img: getJewelryPhoto(4), cls: "" },
+  { name: "Pendants", img: getJewelryPhoto(5), cls: "" },
 ];
 
 const PRODUCTS = {
   Rings: [
-    { name: "The Aurelia Ring", spec: "18K Gold · 0.42 ct", price: 64000, img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
-    { name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000, img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
-    { name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000, img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
-    { name: "Étoile Band", spec: "18K Gold", price: 42000, img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    { name: "The Aurelia Ring", spec: "18K Gold · 0.42 ct", price: 64000, img: getJewelryPhoto(0), hover: getJewelryHover(0) },
+    { name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000, img: getJewelryPhoto(1), hover: getJewelryHover(1) },
+    { name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000, img: getJewelryPhoto(2), hover: getJewelryHover(2) },
+    { name: "Étoile Band", spec: "18K Gold", price: 42000, img: getJewelryPhoto(3), hover: getJewelryHover(3) },
   ],
   Earrings: [
-    { name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000, img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
-    { name: "Petal Studs", spec: "Rose Gold", price: 32000, img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
-    { name: "Nightfall Hoops", spec: "18K · Diamonds", price: 118000, img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
-    { name: "Dewdrop Mini", spec: "18K Gold", price: 28000, img: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+    { name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000, img: getJewelryPhoto(4), hover: getJewelryHover(4) },
+    { name: "Petal Studs", spec: "Rose Gold", price: 32000, img: getJewelryPhoto(5), hover: getJewelryHover(5) },
+    { name: "Nightfall Hoops", spec: "18K · Diamonds", price: 118000, img: getJewelryPhoto(6), hover: getJewelryHover(6) },
+    { name: "Dewdrop Mini", spec: "18K Gold", price: 28000, img: getJewelryPhoto(7), hover: getJewelryHover(7) },
   ],
   Necklaces: [
-    { name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000, img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
-    { name: "Sculpt Chain", spec: "Rose Gold", price: 47000, img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
-    { name: "Étoile Necklace", spec: "18K · Diamonds", price: 156000, img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
-    { name: "Grace Lariat", spec: "18K Gold", price: 88000, img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80", hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+    { name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000, img: getJewelryPhoto(8), hover: getJewelryHover(8) },
+    { name: "Sculpt Chain", spec: "Rose Gold", price: 47000, img: getJewelryPhoto(9), hover: getJewelryHover(9) },
+    { name: "Étoile Necklace", spec: "18K · Diamonds", price: 156000, img: getJewelryPhoto(10), hover: getJewelryHover(10) },
+    { name: "Grace Lariat", spec: "18K Gold", price: 88000, img: getJewelryPhoto(11), hover: getJewelryHover(11) },
   ],
 };
 
 const LIMITED = [
-  { name: "The Nocturne Edit", img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
-  { name: "Ruby Hours", img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
-  { name: "Gilded Veil", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
-  { name: "The Ivory Suite", img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80" },
-  { name: "Midnight Bloom", img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80" },
+  { name: "The Nocturne Edit", img: getJewelryPhoto(0) },
+  { name: "Ruby Hours", img: getJewelryPhoto(1) },
+  { name: "Gilded Veil", img: getJewelryPhoto(2) },
+  { name: "The Ivory Suite", img: getJewelryPhoto(3) },
+  { name: "Midnight Bloom", img: getJewelryPhoto(4) },
 ];
 
 const TESTIMONIALS = [
@@ -809,8 +816,8 @@ function Header({ cartCount, onOpenCart }) {
             <a href="#visit" onClick={() => setMegaOpen(false)}>Book a Consultation</a>
           </div>
           <Link className="cg-mega__img" to="/collections/rings" onClick={() => setMegaOpen(false)}>
-            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
-              alt="Editorial: model wearing Carats by Grace rings" loading="lazy" />
+            <img src={necklace1}
+              alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </Link>
         </div>
       </div>
@@ -1017,8 +1024,8 @@ function CampaignSplit() {
     <section className="cg-section" style={{ paddingTop: 0 }}>
       <div className="cg-split reveal">
         <div className="cg-split__img">
-          <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80"
-            alt="Editorial: close-up of a ruby cocktail ring on a hand"
+          <img src={necklace2}
+            alt="Editorial: Carats by Grace fine jewelry"
             loading="lazy" />
         </div>
         <div className="cg-split__copy">
@@ -1188,12 +1195,12 @@ function Story() {
         </div>
         <div className="cg-story__imgs reveal">
           <figure>
-            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
-              alt="Editorial: hand resting near the jawline, wearing rings" loading="lazy" />
+            <img src={necklace3}
+              alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure>
-            <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80"
-              alt="Editorial: ear and gold earring close-up" loading="lazy" />
+            <img src={necklace1}
+              alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
         </div>
       </div>
@@ -1212,8 +1219,8 @@ function Craft() {
     <section className="cg-section cg-wrap" aria-labelledby="craft-h">
       <div className="cg-craft__grid">
         <div className="cg-craft__media reveal">
-          <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1200&q=80"
-            alt="Craft: close-up of goldsmith working on a ring" loading="lazy" />
+          <img src={necklace2}
+            alt="Craft: Carats by Grace fine jewelry craftsmanship" loading="lazy" />
           <button className="cg-craft__play" aria-label="Play craftsmanship film">
             <span><Icon name="play" size={20} /></span>
           </button>
@@ -1253,16 +1260,16 @@ function Bridal() {
       <div className="cg-wrap">
         <div className="cg-bridal__grid reveal">
           <figure className="cg-bridal__a">
-            <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=900&q=80"
-              alt="Bridal: portrait of model in wedding jewellery" loading="lazy" />
+            <img src={necklace3}
+              alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure className="cg-bridal__b">
-            <img src="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80"
-              alt="Bridal: close-up of necklace" loading="lazy" />
+            <img src={necklace1}
+              alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure className="cg-bridal__c">
-            <img src="https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80"
-              alt="Bridal: stacked rings on hand" loading="lazy" />
+            <img src={necklace2}
+              alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <div className="cg-bridal__copy">
             <span className="cg-eyebrow">The Bridal Edit</span>
@@ -1386,12 +1393,12 @@ function Testimonials() {
 /* Instagram */
 function Instagram() {
   const cells = [
-    "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=600&q=80",
+    necklace1,
+    necklace2,
+    necklace3,
+    necklace1,
+    necklace2,
+    necklace3,
   ];
   return (
     <section className="cg-section cg-wrap" aria-labelledby="ig-h">
@@ -1430,8 +1437,8 @@ function Visit() {
     <section className="cg-section cg-wrap" aria-labelledby="visit-h">
       <div className="cg-visit__grid reveal">
         <div className="cg-visit__img">
-          <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1200&q=80"
-            alt="The Carats by Grace atelier — interior" loading="lazy" />
+          <img src={necklace1}
+            alt="The Carats by Grace atelier" loading="lazy" />
         </div>
         <div className="cg-visit__form">
           <span className="cg-eyebrow">Visit</span>

@@ -3,8 +3,7 @@
    Mega-menu structure for all primary categories.
    ============================================================ */
 
-const PH = (w, h, bg = 'FAF6F1', fg = '7B1E3A') =>
-  `https://placehold.co/${w}x${h}/${bg}/${fg}`;
+import { getJewelryPhoto } from './photos';
 
 export const navLinks = [
   {
@@ -30,7 +29,7 @@ export const navLinks = [
       { label: '₹75,000 – ₹1,50,000', slug: 'rings?minPrice=75000&maxPrice=150000' },
       { label: 'Above ₹1,50,000',      slug: 'rings?minPrice=150000' },
     ],
-    editorialImage: { src: PH(400, 500), alt: 'Curated rings editorial' },
+    editorialImage: { src: getJewelryPhoto(0), alt: 'Curated rings editorial' },
   },
   {
     label: 'Earrings',
@@ -55,7 +54,7 @@ export const navLinks = [
       { label: '₹50,000 – ₹1,00,000', slug: 'earrings?minPrice=50000&maxPrice=100000' },
       { label: 'Above ₹1,00,000',      slug: 'earrings?minPrice=100000' },
     ],
-    editorialImage: { src: PH(400, 500), alt: 'Curated earrings editorial' },
+    editorialImage: { src: getJewelryPhoto(1), alt: 'Curated earrings editorial' },
   },
   {
     label: 'Necklaces',
@@ -80,7 +79,7 @@ export const navLinks = [
       { label: '₹1,00,000 – ₹2,00,000', slug: 'necklaces?minPrice=100000&maxPrice=200000' },
       { label: 'Above ₹2,00,000',        slug: 'necklaces?minPrice=200000' },
     ],
-    editorialImage: { src: PH(400, 500), alt: 'Curated necklaces editorial' },
+    editorialImage: { src: getJewelryPhoto(2), alt: 'Curated necklaces editorial' },
   },
   {
     label: 'Bracelets',
@@ -105,7 +104,7 @@ export const navLinks = [
       { label: '₹75,000 – ₹1,50,000', slug: 'bracelets?minPrice=75000&maxPrice=150000' },
       { label: 'Above ₹1,50,000',      slug: 'bracelets?minPrice=150000' },
     ],
-    editorialImage: { src: PH(400, 500), alt: 'Curated bracelets editorial' },
+    editorialImage: { src: getJewelryPhoto(0), alt: 'Curated bracelets editorial' },
   },
   {
     label: 'Bridal',
@@ -129,7 +128,7 @@ export const navLinks = [
       { label: '₹1,00,000 – ₹2,50,000',  slug: 'bridal?minPrice=100000&maxPrice=250000' },
       { label: 'Above ₹2,50,000',         slug: 'bridal?minPrice=250000' },
     ],
-    editorialImage: { src: PH(400, 500, 'F1E3DC', '7B1E3A'), alt: 'Bridal jewellery editorial' },
+    editorialImage: { src: getJewelryPhoto(1), alt: 'Bridal jewellery editorial' },
   },
   {
     label: 'Gifting',
@@ -153,7 +152,7 @@ export const navLinks = [
       { label: '₹30,000 – ₹75,000', slug: 'gifting?minPrice=30000&maxPrice=75000' },
       { label: 'Above ₹75,000',      slug: 'gifting?minPrice=75000' },
     ],
-    editorialImage: { src: PH(400, 500), alt: 'Gifting jewellery editorial' },
+    editorialImage: { src: getJewelryPhoto(2), alt: 'Gifting jewellery editorial' },
   },
   {
     label: 'High Jewellery',
@@ -174,6 +173,6 @@ export const navLinks = [
       { label: '₹1,00,000 – ₹2,50,000', slug: 'high-jewellery?maxPrice=250000' },
       { label: 'Above ₹2,50,000',        slug: 'high-jewellery?minPrice=250000' },
     ],
-    editorialImage: { src: PH(400, 500, '1C1517', 'C6A15B'), alt: 'High jewellery editorial' },
+    editorialImage: { src: getJewelryPhoto(0), alt: 'High jewellery editorial' },
   },
 ];

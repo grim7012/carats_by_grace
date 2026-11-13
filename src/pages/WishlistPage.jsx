@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useUI } from "../context/UIContext";
+import { getJewelryPhoto, getJewelryHover } from "../data/photos";
 
 /* ===========================================================================
    1. PAGE CSS (subset of brand tokens)
@@ -175,48 +176,48 @@ const INITIAL_ITEMS = [
   {
     id: "r1", name: "The Aurelia Ring", cat: "Rings",
     spec: "18K Gold · 0.42 ct", price: 64000, inStock: true,
-    img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(0),
+    hover: getJewelryHover(0),
   },
   {
     id: "r2", name: "Ruby Halo", cat: "Rings",
     spec: "Rose Gold · Ruby", price: 132000, inStock: true, lowStock: true,
-    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(1),
+    hover: getJewelryHover(1),
   },
   {
     id: "e2", name: "Petal Studs", cat: "Earrings",
     spec: "Rose Gold", price: 32000, inStock: true,
-    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(2),
+    hover: getJewelryHover(2),
   },
   {
     id: "n3", name: "Étoile Necklace", cat: "Necklaces",
     spec: "18K · Diamonds", price: 156000, inStock: false,
-    img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(3),
+    hover: getJewelryHover(3),
   },
   {
     id: "b1", name: "Slip Bracelet", cat: "Bracelets",
     spec: "18K Gold", price: 58000, inStock: true,
-    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
+    img: getJewelryPhoto(4),
+    hover: getJewelryHover(4),
   },
 ];
 
 const RECOMMENDED = [
   { id: "r4", name: "Étoile Band", spec: "18K Gold", price: 42000,
-    img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(5),
+    hover: getJewelryHover(5) },
   { id: "n1", name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000,
-    img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(6),
+    hover: getJewelryHover(6) },
   { id: "e1", name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000,
-    img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(7),
+    hover: getJewelryHover(7) },
   { id: "r3", name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000,
-    img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(8),
+    hover: getJewelryHover(8) },
 ];
 
 const SORTS = [

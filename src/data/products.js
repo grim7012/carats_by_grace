@@ -2,8 +2,10 @@
    CARATS BY GRACE — Placeholder Product Data
    ============================================================ */
 
-const PH = (w, h, bg = 'FAF6F1', fg = '7B1E3A') =>
-  `https://placehold.co/${w}x${h}/${bg}/${fg}`;
+import { getJewelryPhoto } from './photos';
+
+let phIndex = 0;
+const PH = () => getJewelryPhoto(phIndex++);
 
 // ── Products ─────────────────────────────────────────────────
 export const products = [

@@ -8,6 +8,7 @@ import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown } from 'lucide-r
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useUI } from '../../context/UIContext';
+import { necklace1 } from '../../data/photos';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -172,7 +173,7 @@ export default function Header() {
               onClick={() => setMegaOpen(false)}
             >
               <img
-                src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=600&q=80"
+                src={necklace1}
                 alt="New collection preview"
                 loading="lazy"
               />

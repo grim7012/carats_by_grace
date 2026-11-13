@@ -7,6 +7,7 @@
 
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useUI } from "../context/UIContext";
+import { getJewelryPhoto, getJewelryHover, necklace1 } from "../data/photos";
 
 /* ===========================================================================
    1. SHARED TOKENS (subset — full set lives in global.css)
@@ -220,59 +221,59 @@ const PRICE_BANDS = [
 
 const BASE_PRODUCTS = [
   { id: "r1", name: "The Aurelia Ring", cat: "Rings", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 64000, spec: "18K Gold · 0.42 ct",
-    img: "https://images.unsplash.com/photo-1603561596112-0a132b757442?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(0),
+    hover: getJewelryHover(0) },
   { id: "r2", name: "Ruby Halo", cat: "Rings", metal: "Rose Gold", occ: ["Festive", "Anniversary"], price: 132000, spec: "Rose Gold · Ruby",
-    img: "https://images.unsplash.com/photo-1602752250015-52934bc45613?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(1),
+    hover: getJewelryHover(1) },
   { id: "r3", name: "Grace Solitaire", cat: "Rings", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 98000, spec: "18K · 0.60 ct",
-    img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(2),
+    hover: getJewelryHover(2) },
   { id: "r4", name: "Étoile Band", cat: "Rings", metal: "Yellow Gold", occ: ["Everyday"], price: 42000, spec: "18K Gold",
-    img: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(3),
+    hover: getJewelryHover(3) },
   { id: "e1", name: "Drop Lumière", cat: "Earrings", metal: "Yellow Gold", occ: ["Festive"], price: 76000, spec: "18K · 0.30 ct",
-    img: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(4),
+    hover: getJewelryHover(4) },
   { id: "e2", name: "Petal Studs", cat: "Earrings", metal: "Rose Gold", occ: ["Everyday", "Gifting"], price: 32000, spec: "Rose Gold",
-    img: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(5),
+    hover: getJewelryHover(5) },
   { id: "e3", name: "Nightfall Hoops", cat: "Earrings", metal: "White Gold", occ: ["Festive", "Anniversary"], price: 118000, spec: "18K · Diamonds",
-    img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(6),
+    hover: getJewelryHover(6) },
   { id: "e4", name: "Dewdrop Mini", cat: "Earrings", metal: "Yellow Gold", occ: ["Everyday"], price: 28000, spec: "18K Gold",
-    img: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(7),
+    hover: getJewelryHover(7) },
   { id: "n1", name: "Lumen Pendant", cat: "Necklaces", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 54000, spec: "18K · 0.25 ct",
-    img: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(8),
+    hover: getJewelryHover(8) },
   { id: "n2", name: "Sculpt Chain", cat: "Necklaces", metal: "Rose Gold", occ: ["Everyday"], price: 47000, spec: "Rose Gold",
-    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(9),
+    hover: getJewelryHover(9) },
   { id: "n3", name: "Étoile Necklace", cat: "Necklaces", metal: "White Gold", occ: ["Bridal", "Anniversary"], price: 156000, spec: "18K · Diamonds",
-    img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(10),
+    hover: getJewelryHover(10) },
   { id: "n4", name: "Grace Lariat", cat: "Necklaces", metal: "Yellow Gold", occ: ["Festive"], price: 88000, spec: "18K Gold",
-    img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(11),
+    hover: getJewelryHover(11) },
   { id: "b1", name: "Slip Bracelet", cat: "Bracelets", metal: "Yellow Gold", occ: ["Everyday"], price: 58000, spec: "18K Gold",
-    img: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(12),
+    hover: getJewelryHover(12) },
   { id: "b2", name: "Halo Bangle", cat: "Bangles", metal: "Rose Gold", occ: ["Bridal", "Festive"], price: 122000, spec: "Rose Gold · Diamonds",
-    img: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(13),
+    hover: getJewelryHover(13) },
   { id: "p1", name: "Sol Pendant", cat: "Pendants", metal: "Yellow Gold", occ: ["Everyday", "Gifting"], price: 44000, spec: "18K · 0.18 ct",
-    img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(14),
+    hover: getJewelryHover(14) },
   { id: "p2", name: "Teardrop Pendant", cat: "Pendants", metal: "White Gold", occ: ["Bridal"], price: 96000, spec: "18K · 0.4 ct",
-    img: "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(15),
+    hover: getJewelryHover(15) },
   { id: "r5", name: "Vow Ring", cat: "Rings", metal: "Platinum", occ: ["Bridal"], price: 168000, spec: "Platinum · 0.7 ct",
-    img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(16),
+    hover: getJewelryHover(16) },
   { id: "e5", name: "Cascade Drops", cat: "Earrings", metal: "Yellow Gold", occ: ["Festive", "Anniversary"], price: 104000, spec: "18K · 0.5 ct",
-    img: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=700&q=80",
-    hover: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=700&q=80" },
+    img: getJewelryPhoto(17),
+    hover: getJewelryHover(17) },
 ];
 
 const SORT_OPTIONS = [
@@ -431,8 +432,8 @@ export default function CollectionPage() {
       <section className="cp-hero" aria-label="Collection banner">
         <div className="cp-hero__img">
           <img
-            src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=1800&q=80"
-            alt="Editorial: model wearing Carats by Grace rings"
+            src={necklace1}
+            alt="Editorial: Carats by Grace fine jewelry"
             fetchpriority="high"
           />
         </div>
