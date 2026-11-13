@@ -8,7 +8,13 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useUI } from "../context/UIContext";
-import { getJewelryPhoto, getJewelryHover, necklace1, necklace2, necklace3 } from "../data/photos";
+import {
+  getJewelryPhoto,
+  getJewelryHover,
+  photo01, photo02, photo03, photo04, photo05, photo06,
+  photo07, photo08, photo09, photo10, photo11, photo12,
+  photo13, photo14, photo15, photo16, photo17, photo18,
+} from "../data/photos";
 
 /* ===========================================================================
    1. SHARED TOKENS (subset — full set lives in global.css)
@@ -226,124 +232,124 @@ export const COLLECTION_META = {
     crumb: "Home · Collections · Rings",
     lede: "Everyday fine and once-in-a-lifetime. Quietly luminous pieces, made to be worn.",
     category: "Rings",
-    heroImg: necklace1,
+    heroImg: photo01,
   },
   earrings: {
     title: "Earrings, framed in grace.",
     crumb: "Home · Collections · Earrings",
     lede: "Luminous studs, sculpted drops, and cascading chandeliers crafted to catch every flicker of light.",
     category: "Earrings",
-    heroImg: necklace2,
+    heroImg: photo02,
   },
   necklaces: {
     title: "Necklaces, sculpted in light.",
     crumb: "Home · Collections · Necklaces",
     lede: "From whisper-fine chains to statement collar pieces, designed to rest effortlessly against the collarbone.",
     category: "Necklaces",
-    heroImg: necklace3,
+    heroImg: photo03,
   },
   bracelets: {
     title: "Bracelets & Cuffs.",
     crumb: "Home · Collections · Bracelets",
     lede: "Fluid chains, structured cuffs, and timeless silhouettes crafted to move with you.",
     category: "Bracelets",
-    heroImg: necklace1,
+    heroImg: photo04,
   },
   bangles: {
     title: "Bangles & Kadas.",
     crumb: "Home · Collections · Bangles",
     lede: "Traditional grandeur meets contemporary minimalism. Stacked or worn solo in 22K and 18K gold.",
     category: "Bangles",
-    heroImg: necklace2,
+    heroImg: photo05,
   },
   pendants: {
     title: "Pendants & Talismans.",
     crumb: "Home · Collections · Pendants",
     lede: "Delicate solitaires and celestial motifs on refined gold chains. Intimate pieces made for every day.",
     category: "Pendants",
-    heroImg: necklace3,
+    heroImg: photo06,
   },
   bridal: {
     title: "For the vows. And every day after.",
     crumb: "Home · Collections · The Bridal Edit",
     lede: "Handcrafted ceremonial suites, solitaire sets, and heirloom gold designed for your milestone celebration.",
     occasion: "Bridal",
-    heroImg: necklace1,
+    heroImg: photo07,
   },
   gifting: {
     title: "Curated Gifts of Fine Gold.",
     crumb: "Home · Collections · Gifting",
     lede: "Tokens of love, anniversary milestones, and cherished treasures thoughtfully packaged in our signature box.",
     occasion: "Gifting",
-    heroImg: necklace2,
+    heroImg: photo08,
   },
   "high-jewellery": {
     title: "High Jewellery & Rare Gems.",
     crumb: "Home · Collections · High Jewellery",
     lede: "Bespoke masterworks, rare diamond settings, and exceptional atelier craftsmanship for the connoisseur.",
     priceBand: "gt100",
-    heroImg: necklace3,
+    heroImg: photo09,
   },
   everyday: {
     title: "Everyday Fine Jewellery.",
     crumb: "Home · Collections · Everyday",
     lede: "Lightweight essentials crafted in solid 18K gold. Designed to live in and never take off.",
     occasion: "Everyday",
-    heroImg: necklace1,
+    heroImg: photo10,
   },
   festive: {
     title: "The Festive & Celebratory Edit.",
     crumb: "Home · Collections · Festive",
     lede: "Luminous polki diamonds, rubies, and handcrafted gold to illuminate evenings of celebration.",
     occasion: "Festive",
-    heroImg: necklace2,
+    heroImg: photo11,
   },
   anniversary: {
     title: "Anniversary Milestones.",
     crumb: "Home · Collections · Anniversary",
     lede: "Enduring eternity bands, solitaire pendants, and diamond suites marking precious chapters.",
     occasion: "Anniversary",
-    heroImg: necklace3,
+    heroImg: photo12,
   },
   "under-50k": {
     title: "Fine Jewellery Under ₹50,000.",
     crumb: "Home · Collections · Under ₹50K",
     lede: "Everyday gold rings, minimalist studs, and delicate chains within reachable luxury.",
     priceBand: "lt50",
-    heroImg: necklace1,
+    heroImg: photo13,
   },
   "50k-1l": {
     title: "Fine Jewellery ₹50,000 – ₹1,00,000.",
     crumb: "Home · Collections · ₹50K – ₹1L",
     lede: "Refined diamond pendants, statement hoops, and signature gold bands.",
     priceBand: "50to100",
-    heroImg: necklace2,
+    heroImg: photo14,
   },
   "above-1l": {
     title: "Fine Jewellery Above ₹1,00,000.",
     crumb: "Home · Collections · Above ₹1L",
     lede: "Solitaire rings, diamond necklaces, and bridal heirlooms crafted with master gem settings.",
     priceBand: "gt100",
-    heroImg: necklace3,
+    heroImg: photo15,
   },
   latest: {
     title: "Latest Arrivals.",
     crumb: "Home · Collections · Latest Arrivals",
     lede: "The newest designs from the Carats by Grace atelier, fresh from the workbench.",
     sort: "newest",
-    heroImg: necklace1,
+    heroImg: photo16,
   },
   bestsellers: {
     title: "Our Most Loved Bestsellers.",
     crumb: "Home · Collections · Bestsellers",
     lede: "The signature silhouettes our clients reach for time and time again.",
-    heroImg: necklace2,
+    heroImg: photo17,
   },
   all: {
     title: "The Complete Atelier.",
     crumb: "Home · Collections · All Jewellery",
     lede: "Explore our full treasury of handcrafted 18K and 22K fine jewellery.",
-    heroImg: necklace1,
+    heroImg: photo18,
   },
 };
 
@@ -526,7 +532,7 @@ export default function CollectionPage() {
     title: "The Complete Atelier.",
     crumb: "All Jewellery",
     lede: "Explore our full treasury of handcrafted 18K and 22K fine jewellery.",
-    heroImg: necklace1,
+    heroImg: photo18,
   };
   const currentMeta = COLLECTION_META[cleanSlug] || defaultMeta;
 
@@ -644,7 +650,7 @@ export default function CollectionPage() {
       <section className="cp-hero" aria-label="Collection banner">
         <div className="cp-hero__img">
           <img
-            src={currentMeta.heroImg || necklace1}
+            src={currentMeta.heroImg || photo18}
             alt={`Editorial: Carats by Grace fine jewelry — ${currentMeta.title}`}
             fetchpriority="high"
           />

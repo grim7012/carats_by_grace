@@ -217,6 +217,20 @@ const PRODUCTS = [
     img: getJewelryPhoto(7) },
   { id: "b1", name: "Slip Bracelet", spec: "18K Gold", price: 58000, cat: "Bracelets", keywords: "bracelet gold everyday",
     img: getJewelryPhoto(8) },
+  { id: "b3", name: "Riviera Tennis Bracelet", spec: "18K White Gold · 1.2 ct Diamonds", price: 135000, cat: "Bracelets", keywords: "bracelet diamond tennis",
+    img: getJewelryPhoto(9) },
+  { id: "b2", name: "Halo Bangle", spec: "Rose Gold · Diamonds", price: 122000, cat: "Bangles", keywords: "bangle diamonds rose gold",
+    img: getJewelryPhoto(10) },
+  { id: "bg1", name: "Maya Filigree Kada", spec: "22K Gold · Handcrafted", price: 142000, cat: "Bangles", keywords: "bangle kada filigree gold",
+    img: getJewelryPhoto(11) },
+  { id: "p1", name: "Sol Pendant", spec: "18K · 0.18 ct", price: 44000, cat: "Pendants", keywords: "pendant gold solitaire everyday",
+    img: getJewelryPhoto(12) },
+  { id: "p3", name: "Crescent Diamond Talisman", spec: "18K Gold · 0.22 ct", price: 52000, cat: "Pendants", keywords: "pendant crescent talisman diamonds",
+    img: getJewelryPhoto(13) },
+  { id: "n5", name: "Nocturne Solitaire Choker", spec: "18K Gold · 0.50 ct", price: 112000, cat: "Necklaces", keywords: "necklace choker solitaire gold",
+    img: getJewelryPhoto(14) },
+  { id: "r6", name: "Sovereign Signet Band", spec: "18K Gold · Brushed Finish", price: 74000, cat: "Rings", keywords: "ring band signet gold",
+    img: getJewelryPhoto(15) },
 ];
 
 const RECENT_KEY = "cbg_recent_searches_v1";

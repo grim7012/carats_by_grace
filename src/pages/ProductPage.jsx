@@ -9,9 +9,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import {
-  necklace1,
-  necklace2,
-  necklace3,
+  photo01,
+  photo02,
+  photo03,
+  photo04,
+  photo05,
   getJewelryPhoto,
   getJewelryHover,
 } from "../data/photos";
@@ -248,11 +250,11 @@ const PRODUCT = {
   sizeOptions: ["10", "11", "12", "13", "14", "15", "16"],
   outOfStockSizes: ["16"],
   images: [
-    { src: necklace1, alt: "The Aurelia Ring — front view" },
-    { src: necklace2, alt: "The Aurelia Ring — on hand" },
-    { src: necklace3, alt: "The Aurelia Ring — side detail" },
-    { src: necklace1, alt: "The Aurelia Ring — pairing with other rings" },
-    { src: necklace2, alt: "The Aurelia Ring — studio on ivory" },
+    { src: photo01, alt: "The Aurelia Ring — front view" },
+    { src: photo02, alt: "The Aurelia Ring — on hand" },
+    { src: photo03, alt: "The Aurelia Ring — side detail" },
+    { src: photo04, alt: "The Aurelia Ring — pairing with other rings" },
+    { src: photo05, alt: "The Aurelia Ring — studio on ivory" },
   ],
   details: {
     "Product details": [

@@ -12,11 +12,12 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useUI } from "../context/UIContext";
 import {
-  necklace1,
-  necklace2,
-  necklace3,
   getJewelryPhoto,
   getJewelryHover,
+  photo01, photo02, photo03, photo04, photo05, photo06,
+  photo07, photo08, photo09, photo10, photo11, photo12,
+  photo13, photo14, photo15, photo16, photo17, photo18,
+  photo19, photo20, photo21, photo22, photo23, photo24,
 } from "../data/photos";
 
 /* ===========================================================================
@@ -531,41 +532,41 @@ const IMG = {
 };
 
 const CATEGORIES = [
-  { name: "Rings", img: getJewelryPhoto(0), cls: "cg-tile--tall", href: "/collections/rings" },
-  { name: "Earrings", img: getJewelryPhoto(1), cls: "", href: "/collections/earrings" },
-  { name: "Necklaces", img: getJewelryPhoto(2), cls: "cg-tile--wide", href: "/collections/necklaces" },
-  { name: "Bracelets", img: getJewelryPhoto(3), cls: "", href: "/collections/bracelets" },
-  { name: "Bangles", img: getJewelryPhoto(4), cls: "", href: "/collections/bangles" },
-  { name: "Pendants", img: getJewelryPhoto(5), cls: "", href: "/collections/pendants" },
+  { name: "Rings", img: photo01, cls: "cg-tile--tall", href: "/collections/rings" },
+  { name: "Earrings", img: photo02, cls: "", href: "/collections/earrings" },
+  { name: "Necklaces", img: photo03, cls: "cg-tile--wide", href: "/collections/necklaces" },
+  { name: "Bracelets", img: photo04, cls: "", href: "/collections/bracelets" },
+  { name: "Bangles", img: photo05, cls: "", href: "/collections/bangles" },
+  { name: "Pendants", img: photo06, cls: "", href: "/collections/pendants" },
 ];
 
 const PRODUCTS = {
   Rings: [
-    { name: "The Aurelia Ring", spec: "18K Gold · 0.42 ct", price: 64000, img: getJewelryPhoto(0), hover: getJewelryHover(0) },
-    { name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000, img: getJewelryPhoto(1), hover: getJewelryHover(1) },
-    { name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000, img: getJewelryPhoto(2), hover: getJewelryHover(2) },
-    { name: "Étoile Band", spec: "18K Gold", price: 42000, img: getJewelryPhoto(3), hover: getJewelryHover(3) },
+    { name: "The Aurelia Ring", spec: "18K Gold · 0.42 ct", price: 64000, img: photo07, hover: photo08 },
+    { name: "Ruby Halo", spec: "Rose Gold · Ruby", price: 132000, img: photo09, hover: photo10 },
+    { name: "Grace Solitaire", spec: "18K · 0.60 ct", price: 98000, img: photo11, hover: photo12 },
+    { name: "Étoile Band", spec: "18K Gold", price: 42000, img: photo13, hover: photo14 },
   ],
   Earrings: [
-    { name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000, img: getJewelryPhoto(4), hover: getJewelryHover(4) },
-    { name: "Petal Studs", spec: "Rose Gold", price: 32000, img: getJewelryPhoto(5), hover: getJewelryHover(5) },
-    { name: "Nightfall Hoops", spec: "18K · Diamonds", price: 118000, img: getJewelryPhoto(6), hover: getJewelryHover(6) },
-    { name: "Dewdrop Mini", spec: "18K Gold", price: 28000, img: getJewelryPhoto(7), hover: getJewelryHover(7) },
+    { name: "Drop Lumière", spec: "18K · 0.30 ct", price: 76000, img: photo15, hover: photo16 },
+    { name: "Petal Studs", spec: "Rose Gold", price: 32000, img: photo17, hover: photo18 },
+    { name: "Nightfall Hoops", spec: "18K · Diamonds", price: 118000, img: photo19, hover: photo20 },
+    { name: "Dewdrop Mini", spec: "18K Gold", price: 28000, img: photo21, hover: photo22 },
   ],
   Necklaces: [
-    { name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000, img: getJewelryPhoto(8), hover: getJewelryHover(8) },
-    { name: "Sculpt Chain", spec: "Rose Gold", price: 47000, img: getJewelryPhoto(9), hover: getJewelryHover(9) },
-    { name: "Étoile Necklace", spec: "18K · Diamonds", price: 156000, img: getJewelryPhoto(10), hover: getJewelryHover(10) },
-    { name: "Grace Lariat", spec: "18K Gold", price: 88000, img: getJewelryPhoto(11), hover: getJewelryHover(11) },
+    { name: "Lumen Pendant", spec: "18K · 0.25 ct", price: 54000, img: photo23, hover: photo24 },
+    { name: "Sculpt Chain", spec: "Rose Gold", price: 47000, img: photo01, hover: photo02 },
+    { name: "Étoile Necklace", spec: "18K · Diamonds", price: 156000, img: photo03, hover: photo04 },
+    { name: "Grace Lariat", spec: "18K Gold", price: 88000, img: photo05, hover: photo06 },
   ],
 };
 
 const LIMITED = [
-  { name: "The Nocturne Edit", img: getJewelryPhoto(0), href: "/collections/nocturne" },
-  { name: "Ruby Hours", img: getJewelryPhoto(1), href: "/collections/ruby-hours" },
-  { name: "Gilded Veil", img: getJewelryPhoto(2), href: "/collections/gilded-veil" },
-  { name: "The Ivory Suite", img: getJewelryPhoto(3), href: "/collections/ivory-suite" },
-  { name: "Midnight Bloom", img: getJewelryPhoto(4), href: "/collections/midnight-bloom" },
+  { name: "The Nocturne Edit", img: photo07, href: "/collections/nocturne" },
+  { name: "Ruby Hours", img: photo08, href: "/collections/ruby-hours" },
+  { name: "Gilded Veil", img: photo09, href: "/collections/gilded-veil" },
+  { name: "The Ivory Suite", img: photo10, href: "/collections/ivory-suite" },
+  { name: "Midnight Bloom", img: photo11, href: "/collections/midnight-bloom" },
 ];
 
 const TESTIMONIALS = [
@@ -820,7 +821,7 @@ function Header({ cartCount, onOpenCart }) {
             <a href="#visit" onClick={() => setMegaOpen(false)}>Book a Consultation</a>
           </div>
           <Link className="cg-mega__img" to="/collections/rings" onClick={() => setMegaOpen(false)}>
-            <img src={necklace1}
+            <img src={photo12}
               alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </Link>
         </div>
@@ -1054,7 +1055,7 @@ function CampaignSplit() {
     <section className="cg-section" style={{ paddingTop: 0 }}>
       <div className="cg-split reveal">
         <div className="cg-split__img">
-          <img src={necklace2}
+          <img src={photo13}
             alt="Editorial: Carats by Grace fine jewelry"
             loading="lazy" />
         </div>
@@ -1232,11 +1233,11 @@ function Story() {
         </div>
         <div className="cg-story__imgs reveal">
           <figure>
-            <img src={necklace3}
+            <img src={photo14}
               alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure>
-            <img src={necklace1}
+            <img src={photo15}
               alt="Editorial: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
         </div>
@@ -1256,7 +1257,7 @@ function Craft() {
     <section className="cg-section cg-wrap" aria-labelledby="craft-h">
       <div className="cg-craft__grid">
         <div className="cg-craft__media reveal">
-          <img src={necklace2}
+          <img src={photo16}
             alt="Craft: Carats by Grace fine jewelry craftsmanship" loading="lazy" />
           <button className="cg-craft__play" aria-label="Play craftsmanship film">
             <span><Icon name="play" size={20} /></span>
@@ -1297,15 +1298,15 @@ function Bridal() {
       <div className="cg-wrap">
         <div className="cg-bridal__grid reveal">
           <figure className="cg-bridal__a">
-            <img src={necklace3}
+            <img src={photo17}
               alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure className="cg-bridal__b">
-            <img src={necklace1}
+            <img src={photo18}
               alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <figure className="cg-bridal__c">
-            <img src={necklace2}
+            <img src={photo19}
               alt="Bridal: Carats by Grace fine jewelry" loading="lazy" />
           </figure>
           <div className="cg-bridal__copy">
@@ -1445,12 +1446,12 @@ function Testimonials() {
 /* Instagram */
 function Instagram() {
   const cells = [
-    necklace1,
-    necklace2,
-    necklace3,
-    necklace1,
-    necklace2,
-    necklace3,
+    photo20,
+    photo21,
+    photo22,
+    photo23,
+    photo24,
+    photo01,
   ];
   const IG_URL = "https://instagram.com/carats_by_grace";
   return (
@@ -1496,7 +1497,7 @@ function Visit() {
     <section className="cg-section cg-wrap" aria-labelledby="visit-h">
       <div className="cg-visit__grid reveal">
         <div className="cg-visit__img">
-          <img src={necklace1}
+          <img src={photo02}
             alt="The Carats by Grace atelier" loading="lazy" />
         </div>
         <div className="cg-visit__form">
